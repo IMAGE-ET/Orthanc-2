@@ -1,0 +1,22 @@
+Pending changes
+===============
+
+* Support of SSL and HTTP Basic Authentication
+* Change of the licensing of the "Core/SQLite" folder to BSD, (to
+  reflect the original licensing terms of Chromium, from which the
+  code derives)
+* Standalone build for cross-compilation
+
+
+Version 0.1.1 (2012/07/20)
+==========================
+
+* Fix Windows version
+* Native Windows build with Microsoft Visual Studio 2005
+* Add path to storage in Configuration.json
+
+
+Version 0.1.0 (2012/07/19)
+==========================
+
+* Initial release
