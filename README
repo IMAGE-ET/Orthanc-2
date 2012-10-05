@@ -1,0 +1,86 @@
+Orthanc - A Lightweight, RESTful DICOM Server
+=============================================
+
+
+General Information
+-------------------
+
+General information about this software can be found on our Google
+Code hosting page:
+http://code.google.com/p/orthanc/
+
+The instructions for building Orthanc can be found in the "INSTALL"
+file.
+
+
+Supported Platforms
+-------------------
+
+Currently, the supported platforms are:
+
+* Linux 32bit.
+* Linux 64bit.
+* Windows 32bit.
+
+
+Supported Toolchains
+--------------------
+
+Orthanc can currently be built using the following compiling
+toolchains:
+
+* Native Linux compilation, with gcc.
+* Native Windows compilation, with Microsoft Visual Studio.
+* Cross-compilation for Windows under Linux, with MinGW.
+
+
+Licensing
+---------
+
+Orthanc is licensed under the GPLv3 license. Because Orthanc uses the
+Software-as-a-Service paradigm, commercial products are allowed to
+access the Orthanc REST services and to bundle Orthanc in an
+commercial aggregate.
+
+We also kindly require scientific works and clinical studies that make
+use of Orthanc to cite Orthanc in their associated publications.
+
+
+Licensing of special directories
+--------------------------------
+
+The following directories have separate licensing terms:
+
+* The files of the "OrthancCppClient/" directory are licensed under
+  the MIT license, which allows commercial products to statically link
+  against the C++ client library.
+
+* The file of the "Core/SQLite/" directory are licensed under the
+  3-clause BSD license, as they are derived from the Chromium project.
+
+
+Content
+-------
+
+This archive contains the following directories:
+
+* Core/               - The core C++ classes (independent of DCMTK)
+* OrthancCppClient/   - Code of the C++ client (under MIT license)
+* OrthancExplorer/    - Code of the Web application (HTML5/Javascript)
+* OrthancServer/      - Code of the Orthanc server (depends on DCMTK)
+* Resources/          - Scripts, resources for building third-party code
+* UnitTests/          - Unit tests
+
+This archive contains the following files:
+
+* AUTHORS             - The list of the authors
+* CMakeLists.txt      - The main build script
+* COPYING             - The GPLv3 license
+* INSTALL             - How to build Orthanc
+* README              - This file
+* THANKS              - The list of the contributors
+* NEWS                - The history of main changes between versions
+
+We have decided not to maintain a separate "ChangeLog" file. Each
+commit to the official Orthanc Mercurial repository should be
+associated with a description of the changes.
