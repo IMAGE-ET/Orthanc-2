@@ -1,0 +1,67 @@
+Pending changes in the mainline
+===============================
+
+None
+
+
+Version 0.2.3 (2012/10/26)
+==========================
+
+* Use HTTP Content-Disposition to set a filename when downloading JSON/DCM
+* URI "/system" for general information about Orthanc
+* Versioning info and help on the command line
+* Improved logging
+* Possibility of dynamic linking against jsoncpp, sqlite, boost and dmctk
+  for Debian packaging
+* Fix some bugs
+* Switch to default 8042 port for HTTP
+
+
+Version 0.2.2 (2012/10/04)
+==========================
+
+* Switch to Google Logging
+* Fixes to Debian packaging
+
+
+Version 0.2.1 (2012/09/28)
+==========================
+
+* Status of series
+* Continuous Integration Server is up and running
+* Ready for Debian packaging
+
+
+Version 0.2.0 (2012/09/16)
+==========================
+
+Major changes
+-------------
+
+* Renaming to "Orthanc"
+* Focus on security: Support of SSL, HTTP Basic Authentication and
+  interdiction of remote access
+* Access to multi-frame images (for nuclear medicine)
+* Access to the raw PNG images (in 8bpp and 16bpp)
+
+Minor changes
+-------------
+
+* Change of the licensing of the "Core/SQLite" folder to BSD (to
+  reflect the original licensing terms of Chromium, from which the
+  code derives)
+* Standalone build for cross-compilation
+
+
+Version 0.1.1 (2012/07/20)
+==========================
+
+* Fix Windows version
+* Native Windows build with Microsoft Visual Studio 2005
+* Add path to storage in Configuration.json
+
+
+Version 0.1.0 (2012/07/19)
+==========================
+
+* Initial release
