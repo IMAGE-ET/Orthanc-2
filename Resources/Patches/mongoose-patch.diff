@@ -1,0 +1,40 @@
+--- i/mongoose/mongoose.c	2012-03-11 23:41:35.000000000 +0100
++++ mongoose.c	2012-09-17 17:32:01.000000000 +0200
+@@ -92,8 +92,9 @@
+ #define strtoll(x, y, z) strtol(x, y, z)
+ #else
+ #define __func__  __FUNCTION__
+-#define strtoull(x, y, z) _strtoui64(x, y, z)
+-#define strtoll(x, y, z) _strtoi64(x, y, z)
++#include <stdlib.h>
++//#define strtoull(x, y, z) _strtoui64(x, y, z)
++//#define strtoll(x, y, z) _strtoi64(x, y, z)
+ #endif // _MSC_VER
+ 
+ #define ERRNO   GetLastError()
+@@ -3844,10 +3845,8 @@
+ }
+ 
+ static void discard_current_request_from_buffer(struct mg_connection *conn) {
+-  char *buffered;
+   int buffered_len, body_len;
+ 
+-  buffered = conn->buf + conn->request_len;
+   buffered_len = conn->data_len - conn->request_len;
+   assert(buffered_len >= 0);
+ 
+@@ -4148,7 +4147,13 @@
+ 
+   // Wait until mg_fini() stops
+   while (ctx->stop_flag != 2) {
+-    (void) sleep(0);
++#if defined(__linux)
++    usleep(100000);
++#elif defined(_WIN32)
++    Sleep(100);
++#else
++#error Support your platform here
++#endif
+   }
+   free_context(ctx);
+ 
