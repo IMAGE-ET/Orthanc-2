@@ -1,0 +1,33 @@
+Orthanc - A Lightweight, RESTful DICOM Server
+=============================================
+
+Orthanc has originally been written by Sebastien Jodogne
+(cf. "AUTHORS" file). This file contains the list of the people that
+have further contributed to Orthanc by reporting problems, suggesting
+various improvements, or submitting actual code. Please help keep it
+complete and exempt or errors.
+
+
+Code contributors
+-----------------
+
+* Cyril Paulus (cyril.paulus@student.ulg.ac.be), for the build process
+  and suggestions about the REST API.
+
+
+Artwork
+-------
+
+https://code.google.com/p/orthanc/wiki/Logos
+
+* Benjamin Golinvaux (golinvauxb@gmail.com), for creating the official logo.
+* Jean-François Degbomont (jfdegbo@gmail.com), for submitting a logo.
+* Martin Jolly (martin.jolly@gmail.com), for submitting a logo.
+* Philippe Sepers (sepers.philippe@gmail.com), for submitting a logo.
+
+
+Debian
+------
+
+* Mathieu Malaterre (mathieu.malaterre@gmail.com), for sponsoring Orthanc.
+* Andreas Tille (andreas@an3as.eu), for help about Debian packaging. 
