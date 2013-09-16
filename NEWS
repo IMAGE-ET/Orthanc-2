@@ -1,0 +1,190 @@
+Pending changes in the mainline
+===============================
+
+* Detection of stable patients/studies/series
+* C-Find SCU at the instance level
+* Link from modified to original resource in Orthanc Explorer
+* Fix of issue #8
+* Anonymization of the medical alerts tag (0010,2000)
+
+
+Version 0.6.0 (2013/07/16)
+==========================
+
+Major changes
+-------------
+
+* Introduction of the C++ client
+* Send DICOM resources to other Orthanc instances through HTTP
+* Access to signed images (instances/.../image-int16)
+  (Closes: Debian #716958)
+
+Minor changes
+-------------
+
+* Export of DICOM files to the host filesystem (instances/.../export)
+* Statistics about patients, studies, series and instances
+* Link from anonymized to original resource in Orthanc Explorer
+* Fixes for Red Hat and Debian packaging
+* Fixes for history in Orthanc Explorer
+* Fixes for boost::thread, as reported by Cyril Paulus
+* Fix licensing (Closes: Debian #712038)
+
+Metadata
+--------
+
+* Access to the metadata through the REST API (.../metadata)
+* Support of user-defined metadata
+* "LastUpdate" metadata for patients, studies and series
+* "/tools/now" to be used in combination with "LastUpdate"
+* Improved support of series with temporal positions
+
+
+Version 0.5.2 (2013/05/07)
+==========================
+
+* "Bulk" Store-SCU (send several DICOM instances with the same
+  DICOM connexion)
+* Store-SCU for patients and studies in Orthanc Explorer
+* Filtering of incoming DICOM instances (through Lua scripting)
+* Filtering of incoming HTTP requests (through Lua scripting)
+* Clearing of "/exports" and "/changes"
+* Check MD5 of third party downloads
+* Faking of the HTTP methods PUT and DELETE
+
+
+Version 0.5.1 (2013/04/17)
+==========================
+
+* Support of RGB images
+* Fix of store SCU in release builds
+* Possibility to store the SQLite index at another place than the
+  DICOM instances (for performance)
+
+
+Version 0.5.0 (2013/01/31)
+==========================
+
+Major changes
+-------------
+
+* Download of modified or anonymized DICOM instances
+* Inplace modification and anymization of DICOM series, studies and patients
+
+Minor changes
+-------------
+
+* Support of private tags
+* Implementation of the PMSCT_RLE1 image decoding for Philips modalities
+* Generation of random DICOM UID through the REST API (/tools/generate-uid)
+
+
+Version 0.4.0 (2012/12/14)
+==========================
+
+Major changes
+-------------
+
+* Recycling of disk space
+* Raw access to the value of the DICOM tags in the REST API
+
+Minor changes
+-------------
+
+* Protection of patients against recycling (also in Orthanc Explorer)
+* The DICOM dictionaries are embedded in Windows builds
+
+
+Version 0.3.1 (2012/12/05)
+==========================
+
+* Download archives of patients, studies and series as ZIP files
+* Orthanc now checks the version of its database schema before starting
+
+
+Version 0.3.0 (2012/11/30)
+==========================
+
+Major changes
+-------------
+
+* Transparent compression of the DICOM instances on the disk
+* The patient/study/series/instances are now indexed by SHA-1 digests
+  of their DICOM Instance IDs (and not by UUIDs anymore): The same
+  DICOM objects are thus always identified by the same Orthanc IDs
+* Log of exported instances through DICOM C-Store SCU ("/exported" URI)
+* Full refactoring of the DB schema and of the REST API
+* Introduction of generic classes for REST APIs (in Core/RestApi)
+
+Minor changes
+-------------
+
+* "/statistics" URI
+* "last" flag to retrieve the last change from the "/changes" URI
+* Generate a sample configuration file from command line
+* "CompletedSeries" event in the changes API
+* Thread to continuously flush DB to disk (SQLite checkpoints for
+  improved robustness)
+
+
+Version 0.2.3 (2012/10/26)
+==========================
+
+* Use HTTP Content-Disposition to set a filename when downloading JSON/DCM
+* URI "/system" for general information about Orthanc
+* Versioning info and help on the command line
+* Improved logging
+* Possibility of dynamic linking against jsoncpp, sqlite, boost and dmctk
+  for Debian packaging
+* Fix some bugs
+* Switch to default 8042 port for HTTP
+
+
+Version 0.2.2 (2012/10/04)
+==========================
+
+* Switch to Google Logging
+* Fixes to Debian packaging
+
+
+Version 0.2.1 (2012/09/28)
+==========================
+
+* Status of series
+* Continuous Integration Server is up and running
+* Ready for Debian packaging
+
+
+Version 0.2.0 (2012/09/16)
+==========================
+
+Major changes
+-------------
+
+* Renaming to "Orthanc"
+* Focus on security: Support of SSL, HTTP Basic Authentication and
+  interdiction of remote access
+* Access to multi-frame images (for nuclear medicine)
+* Access to the raw PNG images (in 8bpp and 16bpp)
+
+Minor changes
+-------------
+
+* Change of the licensing of the "Core/SQLite" folder to BSD (to
+  reflect the original licensing terms of Chromium, from which the
+  code derives)
+* Standalone build for cross-compilation
+
+
+Version 0.1.1 (2012/07/20)
+==========================
+
+* Fix Windows version
+* Native Windows build with Microsoft Visual Studio 2005
+* Add path to storage in Configuration.json
+
+
+Version 0.1.0 (2012/07/19)
+==========================
+
+* Initial release
