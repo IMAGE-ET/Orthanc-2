@@ -77,6 +77,9 @@
 
 
 
+#include "../PrecompiledHeadersServer.h"
+#include "DicomImageDecoder.h"
+
 #include "../../Core/OrthancException.h"
 #include "../../Core/ImageFormats/ImageProcessing.h"
 #include "../../Core/ImageFormats/PngWriter.h"  // TODO REMOVE THIS
@@ -323,7 +326,7 @@ namespace Orthanc
                    << (info.IsPlanar() ? ", planar" : ", non-planar");
       throw OrthancException(ErrorCode_NotImplemented);
     }
-    
+
     target.SetHeight(info.GetHeight());
     target.SetWidth(info.GetWidth());
     target.SetFormat(format);
@@ -659,7 +662,7 @@ namespace Orthanc
         }
         else
         {
-          ImageProcessing::ShiftScale(sourceAccessor, -a, 255.0f / static_cast<float>(b - a));
+          ImageProcessing::ShiftScale(sourceAccessor, static_cast<float>(-a), 255.0f / static_cast<float>(b - a));
 
           if (source.GetFormat() == PixelFormat_Grayscale8)
           {
