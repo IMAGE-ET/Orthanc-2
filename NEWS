@@ -1,0 +1,414 @@
+Pending changes in the mainline
+===============================
+
+General
+-------
+
+* Major speed-up thanks to a new database schema
+* Plugins can monitor changes through callbacks
+* Download ZIP + DICOMDIR from Orthanc Explorer
+* Sample plugin framework to serve static resources (./Plugins/Samples/WebSkeleton/)
+
+Fixes
+-----
+
+* Fix issue 19 (YBR_FULL are decoded incorrectly)
+* Fix issue 21 (Microsoft Visual Studio precompiled headers)
+* Fix issue 22 (Error decoding multi-frame instances)
+* Fix issue 24 (Build fails on OSX when directory has .DS_Store files)
+* Fix crash when bad HTTP credentials are provided
+
+
+Version 0.8.4 (2014/09/19)
+==========================
+
+* "/instances-tags" to get the tags of all the child instances of a
+  patient/study/series with a single REST call (bulk tags retrieval)
+* Configuration/Lua to select the accepted C-Store SCP transfer syntaxes
+* Fix reporting of errors in Orthanc Explorer when sending images to peers/modalities
+* Installation of plugin SDK in CMake
+
+
+Version 0.8.3 (2014/09/11)
+==========================
+
+Major
+-----
+
+* Creation of ZIP archives for media storage, with DICOMDIR
+* URIs to get all the children of a given resource in a single REST call
+* "/tools/lookup" URI to map DICOM UIDs to Orthanc identifiers
+* Support of index-only mode (using the "StoreDicom" option)
+* Plugins can implement a custom storage area
+
+Minor
+-----
+
+* Configuration option to enable HTTP Keep-Alive
+* Configuration option to disable the logging of exported resources in "/exports"
+* Plugins can retrieve the path to Orthanc and to its configuration file
+* "/tools/create-dicom" now accepts the "PatientID" DICOM tag (+ updated sample)
+* Possibility to set HTTP headers from plugins
+* "LastUpdate" metadata is now always returned for patients, studies and series
+
+Maintenance
+-----------
+
+* Refactoring of HttpOutput ("Content-Length" header is now always sent)
+* Upgrade to Mongoose 3.8
+* Fixes for Visual Studio 2013 and Windows 64bit
+* Fix issue 16: Handling of "AT" value representations in JSON
+* Fix issue 17
+
+
+Version 0.8.2 (2014/08/07)
+==========================
+
+* Support of the standard text encodings
+* Hot restart of Orthanc by posting to "/tools/reset"
+* More fault-tolerant commands in Lua scripts
+* Parameter to set the default encoding for DICOM files without SpecificCharacterSet
+* Fix of issue #14 (support of XCode 5.1)
+* Upgrade to Google Test 1.7.0
+
+
+Version 0.8.1 (2014/07/29)
+==========================
+
+General
+-------
+
+* Access patient module at the study level to cope with PatientID collisions
+* On-the-fly conversion of JSON to XML according to the HTTP Accept header
+* C-Echo SCU in the REST API
+* DICOM conformance statement available at URI "/tools/dicom-conformance"
+
+Lua scripts
+-----------
+
+* Lua scripts can do HTTP requests, and thus can call Web services
+* Lua scripts can invoke system commands, with CallSystem()
+
+Plugins
+-------
+
+* Lookup for DICOM UIDs in the plugin SDK
+* Plugins have access to the HTTP headers and can answer with HTTP status codes
+* Callback to react to the incoming of DICOM instances
+
+Fixes
+-----
+
+* Fix build of Google Log with Visual Studio >= 11.0
+* Fix automated generation of the list of resource children in the REST API
+
+
+Version 0.8.0 (2014/07/10)
+==========================
+
+Major changes
+-------------
+
+* Routing images with Lua scripts
+* Introduction of the Orthanc Plugin SDK
+* Official support of OS X (Darwin) 10.8
+
+Minor changes
+-------------
+
+* Extraction of tags for the patient/study/series/instance DICOM modules
+* Extraction of the tags shared by all the instances of a patient/study/series
+* Options to limit the number of results for an incoming C-FIND query
+* Support of kFreeBSD
+* Several code refactorings
+* Fix OrthancCppClient::GetVoxelSizeZ()
+
+
+Version 0.7.6 (2014/06/11)
+==========================
+
+* Support of JPEG and JPEG-LS decompression
+* Download DICOM images as Matlab/Octave arrays
+* Precompiled headers for Microsoft Visual Studio
+
+
+Version 0.7.5 (2014/05/08)
+==========================
+
+* Dynamic negotiation of SOP classes for C-Store SCU
+* Creation of DICOM instances using the REST API
+* Embedding of images within DICOM instances
+* Adding/removal/modification of remote modalities/peers through REST
+* Reuse of the previous SCU connection to avoid unnecessary handshakes
+* Fix problems with anonymization and modification
+* Fix missing licensing terms about reuse of some code from DCMTK
+* Various code refactorings
+
+
+Version 0.7.4 (2014/04/16)
+==========================
+
+* Switch to openssl-1.0.1g in static builds (cf. Heartbleed exploit)
+* Switch to boost 1.55.0 in static builds (to solve compiling errors)
+* Better logging about nonexistent tags
+* Dcm4Chee manufacturer
+* Automatic discovering of the path to the DICOM dictionaries
+* In the "DicomModalities" config, the port number can be a string
+
+
+Version 0.7.3 (2014/02/14)
+==========================
+
+Major changes
+-------------
+
+* Fixes in the implementation of the C-FIND handler for Query/Retrieve
+* Custom attachment of files to patients, studies, series or instances
+* Access to lowlevel info about the attached files through the REST API
+* Recover pixel data for more transfer syntaxes (notably JPEG)
+
+Minor changes
+-------------
+
+* AET comparison is now case-insensitive by default
+* Possibility to disable the HTTP server or the DICOM server
+* Automatic computation of MD5 hashes for the stored DICOM files
+* Maintenance tool to recover DICOM files compressed by Orthanc
+* The newline characters in the configuration file are fixed for Linux
+* Capture of the SIGTERM signal in Linux
+
+
+Version 0.7.2 (2013/11/08)
+==========================
+
+* Support of Query/Retrieve from medInria
+* Accept more transfer syntaxes for C-Store SCP and SCU (notably JPEG)
+* Create the meta-header when receiving files through C-Store SCP
+* Fixes and improvements thanks to the static analyzer cppcheck
+
+
+Version 0.7.1 (2013/10/30)
+==========================
+
+* Use ZIP64 only when required to improve compatibility (cf. issue #7)
+* Refactoring of the CMake options
+* Fix for big-endian architectures (RedHat bug #985748)
+* Use filenames with 8 characters in ZIP files for maximum compatibility
+* Possibility to build Orthanc inplace (in the source directory)
+
+
+Version 0.7.0 (2013/10/25)
+==========================
+
+Major changes
+-------------
+
+* DICOM Query/Retrieve is supported
+
+Minor changes
+-------------
+
+* Possibility to keep the PatientID during an anonymization
+* Check whether "unzip", "tar" and/or "7-zip" are installed from CMake
+
+
+Version 0.6.2 (2013/10/04)
+==========================
+
+* Build of the C++ client as a shared library
+* Improvements and documentation of the C++ client API
+* Fix of Debian bug #724947 (licensing issue with the SHA-1 library)
+* Switch to Boost 1.54.0 (cf. issue #9)
+* "make uninstall" is now possible
+
+
+Version 0.6.1 (2013/09/16)
+==========================
+
+* Detection of stable patients/studies/series
+* C-Find SCU at the instance level
+* Link from modified to original resource in Orthanc Explorer
+* Fix of issue #8
+* Anonymization of the medical alerts tag (0010,2000)
+
+
+Version 0.6.0 (2013/07/16)
+==========================
+
+Major changes
+-------------
+
+* Introduction of the C++ client
+* Send DICOM resources to other Orthanc instances through HTTP
+* Access to signed images (instances/.../image-int16)
+  (Closes: Debian #716958)
+
+Minor changes
+-------------
+
+* Export of DICOM files to the host filesystem (instances/.../export)
+* Statistics about patients, studies, series and instances
+* Link from anonymized to original resource in Orthanc Explorer
+* Fixes for Red Hat and Debian packaging
+* Fixes for history in Orthanc Explorer
+* Fixes for boost::thread, as reported by Cyril Paulus
+* Fix licensing (Closes: Debian #712038)
+
+Metadata
+--------
+
+* Access to the metadata through the REST API (.../metadata)
+* Support of user-defined metadata
+* "LastUpdate" metadata for patients, studies and series
+* "/tools/now" to be used in combination with "LastUpdate"
+* Improved support of series with temporal positions
+
+
+Version 0.5.2 (2013/05/07)
+==========================
+
+* "Bulk" Store-SCU (send several DICOM instances with the same
+  DICOM connection)
+* Store-SCU for patients and studies in Orthanc Explorer
+* Filtering of incoming DICOM instances (through Lua scripting)
+* Filtering of incoming HTTP requests (through Lua scripting)
+* Clearing of "/exports" and "/changes"
+* Check MD5 of third party downloads
+* Faking of the HTTP methods PUT and DELETE
+
+
+Version 0.5.1 (2013/04/17)
+==========================
+
+* Support of RGB images
+* Fix of store SCU in release builds
+* Possibility to store the SQLite index at another place than the
+  DICOM instances (for performance)
+
+
+Version 0.5.0 (2013/01/31)
+==========================
+
+Major changes
+-------------
+
+* Download of modified or anonymized DICOM instances
+* Inplace modification and anonymization of DICOM series, studies and patients
+
+Minor changes
+-------------
+
+* Support of private tags
+* Implementation of the PMSCT_RLE1 image decoding for Philips modalities
+* Generation of random DICOM UID through the REST API (/tools/generate-uid)
+
+
+Version 0.4.0 (2012/12/14)
+==========================
+
+Major changes
+-------------
+
+* Recycling of disk space
+* Raw access to the value of the DICOM tags in the REST API
+
+Minor changes
+-------------
+
+* Protection of patients against recycling (also in Orthanc Explorer)
+* The DICOM dictionaries are embedded in Windows builds
+
+
+Version 0.3.1 (2012/12/05)
+==========================
+
+* Download archives of patients, studies and series as ZIP files
+* Orthanc now checks the version of its database schema before starting
+
+
+Version 0.3.0 (2012/11/30)
+==========================
+
+Major changes
+-------------
+
+* Transparent compression of the DICOM instances on the disk
+* The patient/study/series/instances are now indexed by SHA-1 digests
+  of their DICOM Instance IDs (and not by UUIDs anymore): The same
+  DICOM objects are thus always identified by the same Orthanc IDs
+* Log of exported instances through DICOM C-Store SCU ("/exported" URI)
+* Full refactoring of the DB schema and of the REST API
+* Introduction of generic classes for REST APIs (in Core/RestApi)
+
+Minor changes
+-------------
+
+* "/statistics" URI
+* "last" flag to retrieve the last change from the "/changes" URI
+* Generate a sample configuration file from command line
+* "CompletedSeries" event in the changes API
+* Thread to continuously flush DB to disk (SQLite checkpoints for
+  improved robustness)
+
+
+Version 0.2.3 (2012/10/26)
+==========================
+
+* Use HTTP Content-Disposition to set a filename when downloading JSON/DCM
+* URI "/system" for general information about Orthanc
+* Versioning info and help on the command line
+* Improved logging
+* Possibility of dynamic linking against jsoncpp, sqlite, boost and dmctk
+  for Debian packaging
+* Fix some bugs
+* Switch to default 8042 port for HTTP
+
+
+Version 0.2.2 (2012/10/04)
+==========================
+
+* Switch to Google Logging
+* Fixes to Debian packaging
+
+
+Version 0.2.1 (2012/09/28)
+==========================
+
+* Status of series
+* Continuous Integration Server is up and running
+* Ready for Debian packaging
+
+
+Version 0.2.0 (2012/09/16)
+==========================
+
+Major changes
+-------------
+
+* Renaming to "Orthanc"
+* Focus on security: Support of SSL, HTTP Basic Authentication and
+  interdiction of remote access
+* Access to multi-frame images (for nuclear medicine)
+* Access to the raw PNG images (in 8bpp and 16bpp)
+
+Minor changes
+-------------
+
+* Change of the licensing of the "Core/SQLite" folder to BSD (to
+  reflect the original licensing terms of Chromium, from which the
+  code derives)
+* Standalone build for cross-compilation
+
+
+Version 0.1.1 (2012/07/20)
+==========================
+
+* Fix Windows version
+* Native Windows build with Microsoft Visual Studio 2005
+* Add path to storage in Configuration.json
+
+
+Version 0.1.0 (2012/07/19)
+==========================
+
+* Initial release
