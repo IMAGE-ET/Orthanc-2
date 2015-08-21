@@ -1,0 +1,15 @@
+This is a precompiled version of the "patch" standard tool for Windows
+(version 2.5). It was compiled using the MSYS framework.
+
+The binaries originate from the "Git for Windows 1.9.5" package
+(https://msysgit.github.io/). I was unable to find the build
+instructions.
+
+
+URL to the upstream project:
+http://savannah.gnu.org/projects/patch/
+
+License of patch 2.5: GPLv2 (GNU General Public License v2)
+
+Copyright (C) 1988 Larry Wall "with lots o' patches by Paul Eggert"
+Copyright (C) 1997 Free Software Foundation, Inc.
