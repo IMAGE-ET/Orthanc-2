@@ -14,10 +14,10 @@ endif()
 
 
 if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
-  SET(DCMTK_VERSION_NUMBER 360)
-  set(DCMTK_PACKAGE_VERSION "3.6.0")
-  SET(DCMTK_SOURCES_DIR ${CMAKE_BINARY_DIR}/dcmtk-3.6.0)
-  SET(DCMTK_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/dcmtk-3.6.0.zip")
+  SET(DCMTK_VERSION_NUMBER 361)
+  set(DCMTK_PACKAGE_VERSION "3.6.1")
+  SET(DCMTK_SOURCES_DIR ${CMAKE_BINARY_DIR}/dcmtk-3.6.1_20150629)
+  SET(DCMTK_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/dcmtk-3.6.1_20150629.zip")
   SET(DCMTK_MD5 "219ad631b82031806147e4abbfba4fa4")
 
   if (IS_DIRECTORY "${DCMTK_SOURCES_DIR}")
@@ -25,6 +25,14 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
   else()
     set(FirstRun ON)
   endif()
+
+  # Definitions for DCMTK 3.6.1
+  macro(DCMTK_UNSET)
+  endmacro()
+
+  set(DCMTK_CMAKE_INCLUDE ${DCMTK_SOURCES_DIR}/)
+  # End
+
 
   DownloadPackage(${DCMTK_MD5} ${DCMTK_URL} "${DCMTK_SOURCES_DIR}")
 
@@ -106,45 +114,10 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
       ${DCMTK_SOURCES_DIR}/oflog/libsrc/winsock.cc
       )
     
-    execute_process(
-      COMMAND ${PATCH_EXECUTABLE} -p0 -N -i ${ORTHANC_ROOT}/Resources/Patches/dcmtk-linux-speed.patch
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      RESULT_VARIABLE Failure
-      )
-
-    if (Failure AND FirstRun)
-      message(FATAL_ERROR "Error while patching a file")
-    endif()
-
   elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     list(REMOVE_ITEM DCMTK_SOURCES 
       ${DCMTK_SOURCES_DIR}/oflog/libsrc/unixsock.cc
       )
-
-    if (CMAKE_COMPILER_IS_GNUCXX)
-      # This is a patch for MinGW64
-      execute_process(
-        COMMAND ${PATCH_EXECUTABLE} -p0 -N -i ${ORTHANC_ROOT}/Resources/Patches/dcmtk-mingw64.patch
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        RESULT_VARIABLE Failure
-        )
-
-      if (Failure AND FirstRun)
-        message(FATAL_ERROR "Error while patching a file")
-      endif()
-    endif()
-
-    # This patch improves speed, even for Windows
-    execute_process(
-      COMMAND ${PATCH_EXECUTABLE} -p0 -N 
-      INPUT_FILE ${ORTHANC_ROOT}/Resources/Patches/dcmtk-linux-speed.patch
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      RESULT_VARIABLE Failure
-      )
-
-    if (Failure AND FirstRun)
-      message(FATAL_ERROR "Error while patching a file")
-    endif()
   endif()
 
   list(REMOVE_ITEM DCMTK_SOURCES 
@@ -155,7 +128,7 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
 
   #set_source_files_properties(${DCMTK_SOURCES}
   #  PROPERTIES COMPILE_DEFINITIONS
-  #  "PACKAGE_VERSION=\"3.6.0\";PACKAGE_VERSION_NUMBER=\"${DCMTK_VERSION_NUMBER}\"")
+  #  "PACKAGE_VERSION=\"3.6.1\";PACKAGE_VERSION_NUMBER=\"${DCMTK_VERSION_NUMBER}\"")
 
   # This fixes crashes related to the destruction of the DCMTK OFLogger
   # http://support.dcmtk.org/docs-snapshot/file_macros.html
