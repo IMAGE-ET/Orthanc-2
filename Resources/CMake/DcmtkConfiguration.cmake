@@ -18,7 +18,7 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
   set(DCMTK_PACKAGE_VERSION "3.6.1")
   SET(DCMTK_SOURCES_DIR ${CMAKE_BINARY_DIR}/dcmtk-3.6.1_20150629)
   SET(DCMTK_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/dcmtk-3.6.1_20150629.tar.gz")
-  SET(DCMTK_MD5 "219ad631b82031806147e4abbfba4fa4")
+  SET(DCMTK_MD5 "2faf73786fc638ae05fef0103cce0eea")
 
   if (IS_DIRECTORY "${DCMTK_SOURCES_DIR}")
     set(FirstRun OFF)
