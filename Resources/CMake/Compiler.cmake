@@ -42,7 +42,6 @@ elseif (MSVC)
     -D_CRT_SECURE_NO_DEPRECATE=1
     )
   include_directories(${ORTHANC_ROOT}/Resources/ThirdParty/VisualStudio)
-  link_libraries(netapi32)
 endif()
 
 
@@ -69,6 +68,8 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
   endif()
 
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+  link_libraries(netapi32)
+
   if (MSVC)
     message("MSVC compiler version = " ${MSVC_VERSION} "\n")
     # Starting Visual Studio 2013 (version 1800), it is not possible
