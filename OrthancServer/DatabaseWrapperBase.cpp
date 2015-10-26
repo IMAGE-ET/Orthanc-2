@@ -665,22 +665,25 @@ namespace Orthanc
   }
 
 
-  void DatabaseWrapperBase::LookupIdentifier(std::list<int64_t>& target,
-                                             const DicomTag& tag,
-                                             const std::string& value)
+  void DatabaseWrapperBase::LookupIdentifierExact(std::list<int64_t>& target,
+                                                  ResourceType level,
+                                                  const DicomTag& tag,
+                                                  const std::string& value)
   {
-    assert(tag == DICOM_TAG_PATIENT_ID ||
-           tag == DICOM_TAG_STUDY_INSTANCE_UID ||
-           tag == DICOM_TAG_SERIES_INSTANCE_UID ||
-           tag == DICOM_TAG_SOP_INSTANCE_UID ||
-           tag == DICOM_TAG_ACCESSION_NUMBER);
+    assert((level == ResourceType_Patient && tag == DICOM_TAG_PATIENT_ID) ||
+           (level == ResourceType_Study && tag == DICOM_TAG_STUDY_INSTANCE_UID) ||
+           (level == ResourceType_Study && tag == DICOM_TAG_ACCESSION_NUMBER) ||
+           (level == ResourceType_Series && tag == DICOM_TAG_SERIES_INSTANCE_UID) ||
+           (level == ResourceType_Instance && tag == DICOM_TAG_SOP_INSTANCE_UID));
     
     SQLite::Statement s(db_, SQLITE_FROM_HERE, 
-                        "SELECT id FROM DicomIdentifiers WHERE tagGroup=? AND tagElement=? and value=?");
+                        "SELECT d.id FROM DicomIdentifiers AS d, Resources AS r WHERE "
+                        "d.id = r.internalId AND r.resourceType=? AND d.tagGroup=? AND d.tagElement=? AND d.value=?");
 
-    s.BindInt(0, tag.GetGroup());
-    s.BindInt(1, tag.GetElement());
-    s.BindString(2, value);
+    s.BindInt(0, level);
+    s.BindInt(1, tag.GetGroup());
+    s.BindInt(2, tag.GetElement());
+    s.BindString(3, value);
 
     target.clear();
 
@@ -688,5 +691,14 @@ namespace Orthanc
     {
       target.push_back(s.ColumnInt64(0));
     }
+  }
+
+
+  void DatabaseWrapperBase::LookupIdentifierWildcard(std::list<int64_t>& target,
+                                                     const DicomTag& tag,
+                                                     const std::string& value)
+  {
+    // TODO
+    throw OrthancException(ErrorCode_NotImplemented);
   }
 }

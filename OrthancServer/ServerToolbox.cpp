@@ -211,7 +211,7 @@ namespace Orthanc
             tag != DICOM_TAG_SOP_INSTANCE_UID &&
             tag != DICOM_TAG_ACCESSION_NUMBER)
         {
-          s = NormalizeIdentifierTag(s);
+          s = NormalizeTagForWildcard(s);
         }
 
         database.SetIdentifierTag(resource, tag, s);
@@ -376,7 +376,7 @@ namespace Orthanc
     }
 
 
-    std::string NormalizeIdentifierTag(const std::string& value)
+    std::string NormalizeTagForWildcard(const std::string& value)
     {
       std::string s = Toolbox::ConvertToAscii(Toolbox::StripSpaces(value));
       Toolbox::ToUpperCase(s);
