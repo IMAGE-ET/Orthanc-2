@@ -35,6 +35,7 @@
 #include "IFindRequestHandlerFactory.h"
 #include "IMoveRequestHandlerFactory.h"
 #include "IStoreRequestHandlerFactory.h"
+#include "IWorklistRequestHandlerFactory.h"
 #include "IApplicationEntityFilter.h"
 
 #include <boost/shared_ptr.hpp>
@@ -53,11 +54,11 @@ namespace Orthanc
     std::string aet_;
     uint16_t port_;
     bool continue_;
-    bool started_;
     uint32_t clientTimeout_;
     IFindRequestHandlerFactory* findRequestHandlerFactory_;
     IMoveRequestHandlerFactory* moveRequestHandlerFactory_;
     IStoreRequestHandlerFactory* storeRequestHandlerFactory_;
+    IWorklistRequestHandlerFactory* worklistRequestHandlerFactory_;
     IApplicationEntityFilter* applicationEntityFilter_;
 
     static void ServerThread(DicomServer* server);
@@ -90,6 +91,10 @@ namespace Orthanc
     void SetStoreRequestHandlerFactory(IStoreRequestHandlerFactory& handler);
     bool HasStoreRequestHandlerFactory() const;
     IStoreRequestHandlerFactory& GetStoreRequestHandlerFactory() const;
+
+    void SetWorklistRequestHandlerFactory(IWorklistRequestHandlerFactory& handler);
+    bool HasWorklistRequestHandlerFactory() const;
+    IWorklistRequestHandlerFactory& GetWorklistRequestHandlerFactory() const;
 
     void SetApplicationEntityFilter(IApplicationEntityFilter& handler);
     bool HasApplicationEntityFilter() const;

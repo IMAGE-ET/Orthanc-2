@@ -102,6 +102,10 @@
   "Mpeg2TransferSyntaxAccepted"        : true,
   "RleTransferSyntaxAccepted"          : true,
 
+  // Whether Orthanc accepts to act as C-Store SCP for unknown storage
+  // SOP classes (aka. "promiscuous mode")
+  "UnknownSopClassAccepted"            : true,
+
 
 
   /**
@@ -146,8 +150,9 @@
      * A fourth parameter is available to enable patches for a
      * specific PACS manufacturer. The allowed values are currently
      * "Generic" (default value), "StoreScp" (storescp tool from
-     * DCMTK), "ClearCanvas", "MedInria", "Dcm4Chee" and
-     * "SyngoVia". This parameter is case-sensitive.
+     * DCMTK), "ClearCanvas", "MedInria", "Dcm4Chee", "SyngoVia",
+     * "AgfaImpax" (Agfa IMPAX), "EFilm2" (eFilm version 2), and
+     * "Vitrea". This parameter is case-sensitive.
      **/
     // "clearcanvas" : [ "CLEARCANVAS", "192.168.1.1", 104, "ClearCanvas" ]
   },

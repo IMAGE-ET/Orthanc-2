@@ -80,12 +80,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ParsedDicomFile.h"
 
+#include "OrthancInitialization.h"
 #include "ServerToolbox.h"
 #include "FromDcmtkBridge.h"
 #include "ToDcmtkBridge.h"
 #include "Internals/DicomImageDecoder.h"
 #include "../Core/DicomFormat/DicomIntegerPixelAccessor.h"
-#include "../Core/Images/ImageBuffer.h"
 #include "../Core/Images/JpegWriter.h"
 #include "../Core/Images/JpegReader.h"
 #include "../Core/Images/PngReader.h"
@@ -153,7 +153,8 @@ namespace Orthanc
 
 
   // This method can only be called from the constructors!
-  void ParsedDicomFile::Setup(const char* buffer, size_t size)
+  void ParsedDicomFile::Setup(const void* buffer, 
+                              size_t size)
   {
     DcmInputBufferStream is;
     if (size > 0)
@@ -592,9 +593,9 @@ namespace Orthanc
 
   void ParsedDicomFile::Insert(const DicomTag& tag,
                                const Json::Value& value,
-                               bool decodeBinaryTags)
+                               bool decodeDataUriScheme)
   {
-    std::auto_ptr<DcmElement> element(FromDcmtkBridge::FromJson(tag, value, decodeBinaryTags, GetEncoding()));
+    std::auto_ptr<DcmElement> element(FromDcmtkBridge::FromJson(tag, value, decodeDataUriScheme, GetEncoding()));
     InsertInternal(*pimpl_->file_->getDataset(), element.release());
   }
 
@@ -629,7 +630,7 @@ namespace Orthanc
 
   void ParsedDicomFile::UpdateStorageUid(const DicomTag& tag,
                                          const std::string& utf8Value,
-                                         bool decodeBinaryTags)
+                                         bool decodeDataUriScheme)
   {
     if (tag != DICOM_TAG_SOP_CLASS_UID &&
         tag != DICOM_TAG_SOP_INSTANCE_UID)
@@ -640,7 +641,7 @@ namespace Orthanc
     std::string binary;
     const std::string* decoded = &utf8Value;
 
-    if (decodeBinaryTags &&
+    if (decodeDataUriScheme &&
         boost::starts_with(utf8Value, "data:application/octet-stream;base64,"))
     {
       std::string mime;
@@ -691,10 +692,10 @@ namespace Orthanc
     
   void ParsedDicomFile::Replace(const DicomTag& tag,
                                 const Json::Value& value,
-                                bool decodeBinaryTags,
+                                bool decodeDataUriScheme,
                                 DicomReplaceMode mode)
   {
-    std::auto_ptr<DcmElement> element(FromDcmtkBridge::FromJson(tag, value, decodeBinaryTags, GetEncoding()));
+    std::auto_ptr<DcmElement> element(FromDcmtkBridge::FromJson(tag, value, decodeDataUriScheme, GetEncoding()));
     ReplaceInternal(*pimpl_->file_->getDataset(), element, mode);
 
     if (tag == DICOM_TAG_SOP_CLASS_UID ||
@@ -705,7 +706,7 @@ namespace Orthanc
         throw OrthancException(ErrorCode_BadParameterType);
       }
 
-      UpdateStorageUid(tag, value.asString(), decodeBinaryTags);
+      UpdateStorageUid(tag, value.asString(), decodeDataUriScheme);
     }
   }
 
@@ -727,7 +728,7 @@ namespace Orthanc
     DcmTagKey k(tag.GetGroup(), tag.GetElement());
     DcmDataset& dataset = *pimpl_->file_->getDataset();
 
-    if (FromDcmtkBridge::IsPrivateTag(tag) ||
+    if (tag.IsPrivate() ||
         FromDcmtkBridge::IsUnknownTag(tag) ||
         tag == DICOM_TAG_PIXEL_DATA ||
         tag == DICOM_TAG_ENCAPSULATED_DOCUMENT)
@@ -813,17 +814,34 @@ namespace Orthanc
   }
 
 
-  ParsedDicomFile::ParsedDicomFile() : pimpl_(new PImpl)
+  ParsedDicomFile::ParsedDicomFile(bool createIdentifiers) : pimpl_(new PImpl)
   {
     pimpl_->file_.reset(new DcmFileFormat);
-    Replace(DICOM_TAG_PATIENT_ID, FromDcmtkBridge::GenerateUniqueIdentifier(ResourceType_Patient));
-    Replace(DICOM_TAG_STUDY_INSTANCE_UID, FromDcmtkBridge::GenerateUniqueIdentifier(ResourceType_Study));
-    Replace(DICOM_TAG_SERIES_INSTANCE_UID, FromDcmtkBridge::GenerateUniqueIdentifier(ResourceType_Series));
-    Replace(DICOM_TAG_SOP_INSTANCE_UID, FromDcmtkBridge::GenerateUniqueIdentifier(ResourceType_Instance));
+
+    if (createIdentifiers)
+    {
+      Replace(DICOM_TAG_PATIENT_ID, FromDcmtkBridge::GenerateUniqueIdentifier(ResourceType_Patient));
+      Replace(DICOM_TAG_STUDY_INSTANCE_UID, FromDcmtkBridge::GenerateUniqueIdentifier(ResourceType_Study));
+      Replace(DICOM_TAG_SERIES_INSTANCE_UID, FromDcmtkBridge::GenerateUniqueIdentifier(ResourceType_Series));
+      Replace(DICOM_TAG_SOP_INSTANCE_UID, FromDcmtkBridge::GenerateUniqueIdentifier(ResourceType_Instance));
+    }
   }
 
 
-  ParsedDicomFile::ParsedDicomFile(const char* content, size_t size) : pimpl_(new PImpl)
+  ParsedDicomFile::ParsedDicomFile(const DicomMap& map) : pimpl_(new PImpl)
+  {
+    std::auto_ptr<DcmDataset> dataset(ToDcmtkBridge::Convert(map));
+
+    // NOTE: This implies an unnecessary memory copy of the dataset, but no way to get around
+    // http://support.dcmtk.org/redmine/issues/544
+    std::auto_ptr<DcmFileFormat> fileFormat(new DcmFileFormat(dataset.get()));
+
+    pimpl_->file_.reset(fileFormat.release());
+  }
+
+
+  ParsedDicomFile::ParsedDicomFile(const void* content, 
+                                   size_t size) : pimpl_(new PImpl)
   {
     Setup(content, size);
   }
@@ -851,15 +869,27 @@ namespace Orthanc
   }
 
 
+  ParsedDicomFile::ParsedDicomFile(DcmDataset& dicom) : pimpl_(new PImpl)
+  {
+    pimpl_->file_.reset(new DcmFileFormat(&dicom));
+  }
+
+
+  ParsedDicomFile::ParsedDicomFile(DcmFileFormat& dicom) : pimpl_(new PImpl)
+  {
+    pimpl_->file_.reset(new DcmFileFormat(dicom));
+  }
+
+
   ParsedDicomFile::~ParsedDicomFile()
   {
     delete pimpl_;
   }
 
 
-  void* ParsedDicomFile::GetDcmtkObject()
+  DcmFileFormat& ParsedDicomFile::GetDcmtkObject() const
   {
-    return pimpl_->file_.get();
+    return *pimpl_->file_.get();
   }
 
 
@@ -1017,69 +1047,80 @@ namespace Orthanc
   }
 
   
-  void ParsedDicomFile::ExtractImage(ImageBuffer& result,
-                                     unsigned int frame)
+  ImageAccessor* ParsedDicomFile::ExtractImage(IDicomImageDecoder& decoder,
+                                               unsigned int frame)
   {
-    DcmDataset& dataset = *pimpl_->file_->getDataset();
+    std::auto_ptr<ImageAccessor> decoded(decoder.Decode(*this, frame));
 
-    if (!DicomImageDecoder::Decode(result, dataset, frame))
+    if (decoded.get() == NULL)
     {
+      LOG(ERROR) << "Cannot decode a DICOM image";
       throw OrthancException(ErrorCode_BadFileFormat);
+    }
+    else
+    {
+      return decoded.release();
     }
   }
 
 
-  void ParsedDicomFile::ExtractImage(ImageBuffer& result,
-                                     unsigned int frame,
-                                     ImageExtractionMode mode)
+  ImageAccessor* ParsedDicomFile::ExtractImage(IDicomImageDecoder& decoder,
+                                               unsigned int frame,
+                                               ImageExtractionMode mode)
   {
-    DcmDataset& dataset = *pimpl_->file_->getDataset();
+    std::auto_ptr<ImageAccessor> decoded(ExtractImage(decoder, frame));
 
     bool ok = false;
 
     switch (mode)
     {
       case ImageExtractionMode_UInt8:
-        ok = DicomImageDecoder::DecodeAndTruncate(result, dataset, frame, PixelFormat_Grayscale8, false);
+        ok = DicomImageDecoder::TruncateDecodedImage(decoded, PixelFormat_Grayscale8, false);
         break;
 
       case ImageExtractionMode_UInt16:
-        ok = DicomImageDecoder::DecodeAndTruncate(result, dataset, frame, PixelFormat_Grayscale16, false);
+        ok = DicomImageDecoder::TruncateDecodedImage(decoded, PixelFormat_Grayscale16, false);
         break;
 
       case ImageExtractionMode_Int16:
-        ok = DicomImageDecoder::DecodeAndTruncate(result, dataset, frame, PixelFormat_SignedGrayscale16, false);
+        ok = DicomImageDecoder::TruncateDecodedImage(decoded, PixelFormat_SignedGrayscale16, false);
         break;
 
       case ImageExtractionMode_Preview:
-        ok = DicomImageDecoder::DecodePreview(result, dataset, frame);
+        ok = DicomImageDecoder::PreviewDecodedImage(decoded);
         break;
 
       default:
         throw OrthancException(ErrorCode_ParameterOutOfRange);
     }
 
-    if (!ok)
+    if (ok)
     {
-      throw OrthancException(ErrorCode_BadFileFormat);
+      assert(decoded.get() != NULL);
+      return decoded.release();
+    }
+    else
+    {
+      throw OrthancException(ErrorCode_NotImplemented);
     }
   }
 
 
   void ParsedDicomFile::ExtractPngImage(std::string& result,
+                                        IDicomImageDecoder& decoder,
                                         unsigned int frame,
                                         ImageExtractionMode mode)
   {
-    ImageBuffer buffer;
-    ExtractImage(buffer, frame, mode);
+    std::auto_ptr<ImageAccessor> decoded(ExtractImage(decoder, frame, mode));
+    assert(decoded.get() != NULL);
 
-    ImageAccessor accessor(buffer.GetConstAccessor());
     PngWriter writer;
-    writer.WriteToMemory(result, accessor);
+    writer.WriteToMemory(result, *decoded);
   }
 
 
   void ParsedDicomFile::ExtractJpegImage(std::string& result,
+                                         IDicomImageDecoder& decoder,
                                          unsigned int frame,
                                          ImageExtractionMode mode,
                                          uint8_t quality)
@@ -1090,13 +1131,12 @@ namespace Orthanc
       throw OrthancException(ErrorCode_ParameterOutOfRange);
     }
 
-    ImageBuffer buffer;
-    ExtractImage(buffer, frame, mode);
+    std::auto_ptr<ImageAccessor> decoded(ExtractImage(decoder, frame, mode));
+    assert(decoded.get() != NULL);
 
-    ImageAccessor accessor(buffer.GetConstAccessor());
     JpegWriter writer;
     writer.SetQuality(quality);
-    writer.WriteToMemory(result, accessor);
+    writer.WriteToMemory(result, *decoded);
   }
 
 
@@ -1125,6 +1165,13 @@ namespace Orthanc
                                unsigned int maxStringLength)
   {
     FromDcmtkBridge::ToJson(target, *pimpl_->file_->getDataset(), format, flags, maxStringLength);
+  }
+
+
+  void ParsedDicomFile::HeaderToJson(Json::Value& target, 
+                                     DicomToJsonFormat format)
+  {
+    FromDcmtkBridge::ToJson(target, *pimpl_->file_->getMetaInfo(), format, DicomToJsonFlags_None, 0);
   }
 
 
@@ -1221,5 +1268,61 @@ namespace Orthanc
   void ParsedDicomFile::Convert(DicomMap& tags)
   {
     FromDcmtkBridge::Convert(tags, *pimpl_->file_->getDataset());
+  }
+
+
+  ParsedDicomFile* ParsedDicomFile::CreateFromJson(const Json::Value& json,
+                                                   DicomFromJsonFlags flags)
+  {
+    std::string tmp = Configuration::GetGlobalStringParameter("DefaultEncoding", "Latin1");
+    Encoding encoding = StringToEncoding(tmp.c_str());
+
+    Json::Value::Members tags = json.getMemberNames();
+    
+    for (size_t i = 0; i < tags.size(); i++)
+    {
+      DicomTag tag = FromDcmtkBridge::ParseTag(tags[i]);
+      if (tag == DICOM_TAG_SPECIFIC_CHARACTER_SET)
+      {
+        const Json::Value& value = json[tags[i]];
+        if (value.type() != Json::stringValue ||
+            !GetDicomEncoding(encoding, value.asCString()))
+        {
+          LOG(ERROR) << "Unknown encoding while creating DICOM from JSON: " << value;
+          throw OrthancException(ErrorCode_BadRequest);
+        }
+      }
+    }
+
+    const bool generateIdentifiers = (flags & DicomFromJsonFlags_GenerateIdentifiers);
+    const bool decodeDataUriScheme = (flags & DicomFromJsonFlags_DecodeDataUriScheme);
+
+    std::auto_ptr<ParsedDicomFile> result(new ParsedDicomFile(generateIdentifiers));
+    result->SetEncoding(encoding);
+
+    for (size_t i = 0; i < tags.size(); i++)
+    {
+      DicomTag tag = FromDcmtkBridge::ParseTag(tags[i]);
+      const Json::Value& value = json[tags[i]];
+
+      if (tag == DICOM_TAG_PIXEL_DATA ||
+          tag == DICOM_TAG_ENCAPSULATED_DOCUMENT)
+      {
+        if (value.type() != Json::stringValue)
+        {
+          throw OrthancException(ErrorCode_BadRequest);
+        }
+        else
+        {
+          result->EmbedContent(value.asString());
+        }
+      }
+      else if (tag != DICOM_TAG_SPECIFIC_CHARACTER_SET)
+      {
+        result->Replace(tag, value, decodeDataUriScheme);
+      }
+    }
+
+    return result.release();
   }
 }

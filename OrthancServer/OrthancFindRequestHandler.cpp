@@ -88,13 +88,50 @@ namespace Orthanc
   }
 
 
-  bool OrthancFindRequestHandler::Handle(DicomFindAnswers& answers,
+
+  bool OrthancFindRequestHandler::FilterQueryTag(std::string& value /* can be modified */,
+                                                 ResourceType level,
+                                                 const DicomTag& tag,
+                                                 ModalityManufacturer manufacturer)
+  {
+    switch (manufacturer)
+    {
+      case ModalityManufacturer_EFilm2:
+        // Following Denis Nesterov's mail on 2015-11-30
+        if (tag == DicomTag(0x0008, 0x0000) ||  // "GenericGroupLength"
+            tag == DicomTag(0x0010, 0x0000) ||  // "GenericGroupLength"
+            tag == DicomTag(0x0020, 0x0000))    // "GenericGroupLength"
+        {
+          return false;
+        }
+
+        break;
+
+      case ModalityManufacturer_Vitrea:
+        // Following Denis Nesterov's mail on 2015-11-30
+        if (tag == DicomTag(0x5653, 0x0010))  // "PrivateCreator = Vital Images SW 3.4"
+        {
+          return false;
+        }
+
+        break;
+
+      default:
+        break;
+    }
+
+    return true;
+  }
+
+
+  void OrthancFindRequestHandler::Handle(DicomFindAnswers& answers,
                                          const DicomMap& input,
                                          const std::string& remoteIp,
-                                         const std::string& remoteAet)
+                                         const std::string& remoteAet,
+                                         const std::string& calledAet)
   {
     /**
-     * Ensure that the calling modality is known to Orthanc.
+     * Ensure that the remote modality is known to Orthanc.
      **/
 
     RemoteModalityParameters modality;
@@ -103,8 +140,6 @@ namespace Orthanc
     {
       throw OrthancException(ErrorCode_UnknownModality);
     }
-
-    // ModalityManufacturer manufacturer = modality.GetManufacturer();
 
     bool caseSensitivePN = Configuration::GetGlobalBoolParameter("CaseSensitivePN", false);
 
@@ -118,6 +153,7 @@ namespace Orthanc
         levelTmp->IsNull() ||
         levelTmp->IsBinary())
     {
+      LOG(ERROR) << "C-FIND request without the tag 0008,0052 (QueryRetrieveLevel)";
       throw OrthancException(ErrorCode_BadRequest);
     }
 
@@ -170,17 +206,25 @@ namespace Orthanc
         continue;
       }
 
-      ValueRepresentation vr = FromDcmtkBridge::GetValueRepresentation(tag);
-
-      // DICOM specifies that searches must be case sensitive, except
-      // for tags with a PN value representation
-      bool sensitive = true;
-      if (vr == ValueRepresentation_PatientName)
+      if (FilterQueryTag(value, level, tag, modality.GetManufacturer()))
       {
-        sensitive = caseSensitivePN;
-      }
+        ValueRepresentation vr = FromDcmtkBridge::GetValueRepresentation(tag);
 
-      finder.AddDicomConstraint(tag, value, sensitive);
+        // DICOM specifies that searches must be case sensitive, except
+        // for tags with a PN value representation
+        bool sensitive = true;
+        if (vr == ValueRepresentation_PatientName)
+        {
+          sensitive = caseSensitivePN;
+        }
+
+        finder.AddDicomConstraint(tag, value, sensitive);
+      }
+      else
+      {
+        LOG(INFO) << "Because of a patch for the manufacturer of the remote modality, " 
+                  << "ignoring constraint on tag (" << tag.Format() << ") " << FromDcmtkBridge::GetName(tag);
+      }
     }
 
 
@@ -194,7 +238,7 @@ namespace Orthanc
     context_.GetIndex().FindCandidates(resources, instances, finder);
 
     assert(resources.size() == instances.size());
-    bool finished = true;
+    bool complete = true;
 
     for (size_t i = 0; i < instances.size(); i++)
     {
@@ -206,7 +250,7 @@ namespace Orthanc
         if (maxResults != 0 &&
             answers.GetSize() >= maxResults)
         {
-          finished = false;
+          complete = false;
           break;
         }
         else
@@ -218,6 +262,6 @@ namespace Orthanc
 
     LOG(INFO) << "Number of matching resources: " << answers.GetSize();
 
-    return finished;
+    answers.SetComplete(complete);
   }
 }

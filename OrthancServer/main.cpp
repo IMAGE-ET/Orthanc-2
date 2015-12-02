@@ -159,14 +159,16 @@ public:
   {
   }
 
-  virtual bool IsAllowedConnection(const std::string& /*callingIp*/,
-                                   const std::string& /*callingAet*/)
+  virtual bool IsAllowedConnection(const std::string& /*remoteIp*/,
+                                   const std::string& /*remoteAet*/,
+                                   const std::string& /*calledAet*/)
   {
     return true;
   }
 
-  virtual bool IsAllowedRequest(const std::string& /*callingIp*/,
-                                const std::string& callingAet,
+  virtual bool IsAllowedRequest(const std::string& /*remoteIp*/,
+                                const std::string& remoteAet,
+                                const std::string& /*calledAet*/,
                                 DicomRequestType type)
   {
     if (type == DicomRequestType_Store)
@@ -175,9 +177,9 @@ public:
       return true;
     }
 
-    if (!Configuration::IsKnownAETitle(callingAet))
+    if (!Configuration::IsKnownAETitle(remoteAet))
     {
-      LOG(ERROR) << "Unknown remote DICOM modality AET: \"" << callingAet << "\"";
+      LOG(ERROR) << "Unknown remote DICOM modality AET: \"" << remoteAet << "\"";
       return false;
     }
     else
@@ -186,8 +188,9 @@ public:
     }
   }
 
-  virtual bool IsAllowedTransferSyntax(const std::string& callingIp,
-                                       const std::string& callingAet,
+  virtual bool IsAllowedTransferSyntax(const std::string& remoteIp,
+                                       const std::string& remoteAet,
+                                       const std::string& calledAet,
                                        TransferSyntax syntax)
   {
     std::string configuration;
@@ -234,8 +237,34 @@ public:
       if (locker.GetLua().IsExistingFunction(lua.c_str()))
       {
         LuaFunctionCall call(locker.GetLua(), lua.c_str());
-        call.PushString(callingAet);
-        call.PushString(callingIp);
+        call.PushString(remoteAet);
+        call.PushString(remoteIp);
+        call.PushString(calledAet);
+        return call.ExecutePredicate();
+      }
+    }
+
+    return Configuration::GetGlobalBoolParameter(configuration, true);
+  }
+
+
+  virtual bool IsUnknownSopClassAccepted(const std::string& remoteIp,
+                                         const std::string& remoteAet,
+                                         const std::string& calledAet)
+  {
+    static const char* configuration = "UnknownSopClassAccepted";
+
+    {
+      std::string lua = "Is" + std::string(configuration);
+
+      LuaScripting::Locker locker(context_.GetLua());
+      
+      if (locker.GetLua().IsExistingFunction(lua.c_str()))
+      {
+        LuaFunctionCall call(locker.GetLua(), lua.c_str());
+        call.PushString(remoteAet);
+        call.PushString(remoteIp);
+        call.PushString(calledAet);
         return call.ExecutePredicate();
       }
     }
@@ -550,6 +579,7 @@ static void PrintErrors(const char* path)
     PrintErrorCode(ErrorCode_DatabaseNotInitialized, "Plugin trying to call the database during its initialization");
     PrintErrorCode(ErrorCode_SslDisabled, "Orthanc has been built without SSL support");
     PrintErrorCode(ErrorCode_CannotOrderSlices, "Unable to order the slices of the series");
+    PrintErrorCode(ErrorCode_NoWorklistHandler, "No request handler factory for DICOM C-Find Modality SCP");
   }
 
   std::cout << std::endl;
@@ -704,12 +734,22 @@ static bool StartDicomServer(ServerContext& context,
   dicomServer.SetStoreRequestHandlerFactory(serverFactory);
   dicomServer.SetMoveRequestHandlerFactory(serverFactory);
   dicomServer.SetFindRequestHandlerFactory(serverFactory);
+
+#if ORTHANC_PLUGINS_ENABLED == 1
+  if (plugins &&
+      plugins->HasWorklistHandler())
+  {
+    dicomServer.SetWorklistRequestHandlerFactory(*plugins);
+  }
+#endif
+
   dicomServer.SetPortNumber(Configuration::GetGlobalIntegerParameter("DicomPort", 4242));
   dicomServer.SetApplicationEntityTitle(Configuration::GetGlobalStringParameter("DicomAet", "ORTHANC"));
   dicomServer.SetApplicationEntityFilter(dicomFilter);
 
   dicomServer.Start();
-  LOG(WARNING) << "DICOM server listening on port: " << dicomServer.GetPortNumber();
+  LOG(WARNING) << "DICOM server listening with AET " << dicomServer.GetApplicationEntityTitle() 
+               << " on port: " << dicomServer.GetPortNumber();
 
   bool restart;
   ErrorCode error = ErrorCode_Success;
@@ -1067,6 +1107,23 @@ int main(int argc, char* argv[])
     for (;;)
     {
       OrthancInitialize(configurationFile);
+
+      if (0)
+      {
+        // TODO REMOVE THIS TEST
+        DicomUserConnection c;
+        c.SetRemoteHost("localhost");
+        c.SetRemotePort(4243);
+        c.SetRemoteApplicationEntityTitle("ORTHANCTEST");
+        c.Open();
+        ParsedDicomFile f(false);
+        f.Replace(DICOM_TAG_PATIENT_NAME, "M*");
+        DicomFindAnswers a;
+        c.FindWorklist(a, f);
+        Json::Value j;
+        a.ToJson(j, true);
+        std::cout << j;
+      }
 
       bool restart = StartOrthanc(argc, argv, allowDatabaseUpgrade);
       if (restart)

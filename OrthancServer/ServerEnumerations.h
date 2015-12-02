@@ -62,7 +62,10 @@ namespace Orthanc
     ModalityManufacturer_ClearCanvas,
     ModalityManufacturer_MedInria,
     ModalityManufacturer_Dcm4Chee,
-    ModalityManufacturer_SyngoVia
+    ModalityManufacturer_SyngoVia,
+    ModalityManufacturer_AgfaImpax,
+    ModalityManufacturer_EFilm2,
+    ModalityManufacturer_Vitrea
   };
 
   enum DicomRequestType
@@ -98,7 +101,8 @@ namespace Orthanc
     ValueRepresentation_PatientName,
     ValueRepresentation_Date,
     ValueRepresentation_DateTime,
-    ValueRepresentation_Time
+    ValueRepresentation_Time,
+    ValueRepresentation_Sequence
   };
 
   enum DicomToJsonFormat
@@ -119,10 +123,17 @@ namespace Orthanc
 
     // Some predefined combinations
     DicomToJsonFlags_None     = 0,
-    DicomToJsonFlags_Default  = (DicomToJsonFlags_IncludePrivateTags | 
-                                 DicomToJsonFlags_IncludeUnknownTags | 
+    DicomToJsonFlags_Default  = (DicomToJsonFlags_IncludeBinary |
                                  DicomToJsonFlags_IncludePixelData | 
+                                 DicomToJsonFlags_IncludePrivateTags | 
+                                 DicomToJsonFlags_IncludeUnknownTags | 
                                  DicomToJsonFlags_ConvertBinaryToNull)
+  };
+
+  enum DicomFromJsonFlags
+  {
+    DicomFromJsonFlags_DecodeDataUriScheme = (1 << 0),
+    DicomFromJsonFlags_GenerateIdentifiers = (1 << 1)
   };
 
   enum IdentifierConstraintType
@@ -156,6 +167,7 @@ namespace Orthanc
     MetadataType_ModifiedFrom = 5,
     MetadataType_AnonymizedFrom = 6,
     MetadataType_LastUpdate = 7,
+    MetadataType_Instance_Origin = 8,   // New in Orthanc 0.9.5
 
     // Make sure that the value "65535" can be stored into this enumeration
     MetadataType_StartUser = 1024,

@@ -41,12 +41,6 @@
 
 namespace Orthanc
 {
-  static DcmDataset& GetDataset(ParsedDicomFile& file)
-  {
-    return *reinterpret_cast<DcmFileFormat*>(file.GetDcmtkObject())->getDataset();
-  }
-
-
   void DicomInstanceToStore::AddMetadata(ResourceType level,
                                          MetadataType metadata,
                                          const std::string& value)
@@ -69,17 +63,23 @@ namespace Orthanc
     {
       if (!parsed_.HasContent())
       {
-        throw OrthancException(ErrorCode_NotImplemented);
-      }
-      else
-      {
-        // Serialize the parsed DICOM file
-        buffer_.Allocate();
-        if (!FromDcmtkBridge::SaveToMemoryBuffer(buffer_.GetContent(), GetDataset(parsed_.GetContent())))
+        if (!summary_.HasContent())
         {
-          LOG(ERROR) << "Unable to serialize a DICOM file to a memory buffer";
-          throw OrthancException(ErrorCode_InternalError);
+          throw OrthancException(ErrorCode_NotImplemented);
         }
+        else
+        {
+          parsed_.TakeOwnership(new ParsedDicomFile(summary_.GetConstContent()));
+        }                                
+      }
+
+      // Serialize the parsed DICOM file
+      buffer_.Allocate();
+      if (!FromDcmtkBridge::SaveToMemoryBuffer(buffer_.GetContent(), 
+                                               *parsed_.GetContent().GetDcmtkObject().getDataset()))
+      {
+        LOG(ERROR) << "Unable to serialize a DICOM file to a memory buffer";
+        throw OrthancException(ErrorCode_InternalError);
       }
     }
 
@@ -103,16 +103,18 @@ namespace Orthanc
     if (!summary_.HasContent())
     {
       summary_.Allocate();
-      FromDcmtkBridge::Convert(summary_.GetContent(), GetDataset(parsed_.GetContent()));
+      FromDcmtkBridge::Convert(summary_.GetContent(), 
+                               *parsed_.GetContent().GetDcmtkObject().getDataset());
     }
     
     if (!json_.HasContent())
     {
       json_.Allocate();
-      FromDcmtkBridge::ToJson(json_.GetContent(), GetDataset(parsed_.GetContent()), 
+      FromDcmtkBridge::ToJson(json_.GetContent(), 
+                              *parsed_.GetContent().GetDcmtkObject().getDataset(),
                               DicomToJsonFormat_Full, 
                               DicomToJsonFlags_Default,
-                              256 /* max string length */);
+                              ORTHANC_MAXIMUM_TAG_LENGTH);
     }
   }
 
@@ -200,7 +202,7 @@ namespace Orthanc
         break;
       }
 
-      case RequestOrigin_Http:
+      case RequestOrigin_RestApi:
       {
         result["RemoteIp"] = remoteIp_;
         result["Username"] = httpUsername_;
@@ -234,7 +236,7 @@ namespace Orthanc
   {
     origin_ = call.GetRequestOrigin();
 
-    if (origin_ == RequestOrigin_Http)
+    if (origin_ == RequestOrigin_RestApi)
     {
       remoteIp_ = call.GetRemoteIp();
       httpUsername_ = call.GetUsername();
@@ -244,7 +246,7 @@ namespace Orthanc
   void DicomInstanceToStore::SetHttpOrigin(const char* remoteIp,
                                            const char* username)
   {
-    origin_ = RequestOrigin_Http;
+    origin_ = RequestOrigin_RestApi;
     remoteIp_ = remoteIp;
     httpUsername_ = username;
   }

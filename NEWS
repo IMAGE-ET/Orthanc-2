@@ -1,30 +1,60 @@
 Pending changes in the mainline
 ===============================
 
-* Full indexation of the patient/study tags to speed up searches and C-Find
-* Add ".dcm" suffix to files in ZIP archives (cf. URI ".../archive")
-* "/tools/create-dicom": Support of binary tags encoded using data URI scheme
-* "/tools/create-dicom": Support of hierarchical structures (creation of sequences)
+Major
+-----
+
+* Experimental support of DICOM C-Find SCP for modality worklists through plugins
+* Support of DICOM C-Find SCU for modality worklists ("/modalities/{dicom}/find-worklist")
+
+REST API
+--------
+
+* New URIs:
+  - "/series/.../ordered-slices" to order the slices of a 2D+t or 3D series
+  - "/tools/shutdown" to stop Orthanc from the REST API
+  - ".../compress", ".../uncompress" and ".../is-compressed" for attachments
+  - "/tools/create-archive" to create ZIP from a set of resources
+  - "/tools/create-media" to create ZIP+DICOMDIR from a set of resources
+  - "/instances/.../header" to get the meta information (header) of the DICOM instance
+* "/tools/create-dicom":
+  - Support of binary tags encoded using data URI scheme
+  - Support of hierarchical structures (creation of sequences)
+  - Create tags with unknown VR
 * "/modify" can insert/modify sequences
-* "/series/.../ordered-slices" to order the slices of a 2D+t or 3D image
-* New URI "/tools/shutdown" to stop Orthanc from the REST API
-* New URIs for attachments: ".../compress", ".../uncompress" and ".../is-compressed"
-* New configuration option: "Dictionary" to declare custom DICOM tags
-* MIME content type can be associated to custom attachments (cf. "UserContentType")
-* New URIs "/tools/create-archive" and "/tools/create-media" to create ZIP/DICOMDIR
-  from a set of resources
 * ".../preview" and ".../image-uint8" can return JPEG images if the HTTP Accept Header asks so
+* "Origin" metadata for the instances
+
+Minor
+-----
+
+* New configuration options:
+  - "UnknownSopClassAccepted" to disable promiscuous mode (accept unknown SOP class UID)
+  - New configuration option: "Dictionary" to declare custom DICOM tags
+* Add ".dcm" suffix to files in ZIP archives (cf. URI ".../archive")
+* MIME content type can be associated to custom attachments (cf. "UserContentType")
 
 Plugins
 -------
 
-* New function "OrthancPluginRegisterErrorCode()" to declare custom error codes
-* New function "OrthancPluginRegisterDictionaryTag()" to declare custom DICOM tags
-* New function "OrthancPluginRestApiGet2()" to provide HTTP headers when calling Orthanc API
-* New "OrthancStarted", "OrthancStopped", "UpdatedAttachment" 
-  and "UpdatedMetadata" events in change callbacks
+* New functions:
+  - "OrthancPluginRegisterDecodeImageCallback()" to replace the built-in image decoder
+  - "OrthancPluginDicomInstanceToJson()" to convert DICOM to JSON
+  - "OrthancPluginDicomBufferToJson()" to convert DICOM to JSON
+  - "OrthancPluginRegisterErrorCode()" to declare custom error codes
+  - "OrthancPluginRegisterDictionaryTag()" to declare custom DICOM tags
+  - "OrthancPluginRestApiGet2()" to provide HTTP headers when calling Orthanc API
+  - "OrthancPluginGetInstanceOrigin()" to know through which mechanism an instance was received
+  - "OrthancPluginCreateImage()" and "OrthancPluginCreateImageAccessor()" to create images
+  - "OrthancPluginDecodeDicomImage()" to decode DICOM images
+  - "OrthancPluginComputeMd5()" and "OrthancPluginComputeSha1()" to compute MD5/SHA-1 hash
+* New events in change callbacks:
+  - "OrthancStarted"
+  - "OrthancStopped"
+  - "UpdatedAttachment" 
+  - "UpdatedMetadata"
 * "/system" URI gives information about the plugins used for storage area and DB back-end
-* Plugin callbacks should now return explicit "OrthancPluginErrorCode" instead of integers
+* Plugin callbacks must now return explicit "OrthancPluginErrorCode" (instead of integers)
 
 Lua
 ---
@@ -34,13 +64,16 @@ Lua
 Maintenance
 -----------
 
-* Full refactoring of the searching features
+* Full indexation of the patient/study tags to speed up searches and C-Find
+* Many refactorings, notably of the searching features and of the image decoding
 * C-Move SCP for studies using AccessionNumber tag
 * Fix issue 4 (C-Store Association not renegotiated on Specific-to-specific transfer syntax change)
-* "/tools/create-dicom" can create tags with unknown VR
+* Fix formatting of multipart HTTP answers
 * "--logdir" flag creates a single log file instead of 3 separate files for errors/warnings/infos
 * "--errors" flag lists the error codes that could be returned by Orthanc
 * Under Windows, the exit status of Orthanc corresponds to the encountered error code
+* New "AgfaImpax", "EFilm2" and "Vitrea" modality manufacturers
+* Upgrade to Boost 1.59.0 for static builds
 
 
 Version 0.9.4 (2015/09/16)

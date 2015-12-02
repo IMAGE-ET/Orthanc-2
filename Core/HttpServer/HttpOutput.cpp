@@ -442,7 +442,7 @@ namespace Orthanc
 
     multipartBoundary_ = Toolbox::GenerateUuid();
     multipartContentType_ = contentType;
-    header += "Content-Type: multipart/related; type=multipart/" + subType + "; boundary=" + multipartBoundary_ + "\r\n\r\n";
+    header += "Content-Type: multipart/" + subType + "; type=" + contentType + "; boundary=" + multipartBoundary_ + "\r\n\r\n";
 
     stream_.Send(true, header.c_str(), header.size());
     state_ = State_WritingMultipart;
@@ -451,10 +451,10 @@ namespace Orthanc
 
   void HttpOutput::StateMachine::SendMultipartItem(const void* item, size_t length)
   {
-    std::string header = "--" + multipartBoundary_ + "\n";
-    header += "Content-Type: " + multipartContentType_ + "\n";
-    header += "Content-Length: " + boost::lexical_cast<std::string>(length) + "\n";
-    header += "MIME-Version: 1.0\n\n";
+    std::string header = "--" + multipartBoundary_ + "\r\n";
+    header += "Content-Type: " + multipartContentType_ + "\r\n";
+    header += "Content-Length: " + boost::lexical_cast<std::string>(length) + "\r\n";
+    header += "MIME-Version: 1.0\r\n\r\n";
 
     stream_.Send(false, header.c_str(), header.size());
 
@@ -463,7 +463,7 @@ namespace Orthanc
       stream_.Send(false, item, length);
     }
 
-    stream_.Send(false, "\n", 1);
+    stream_.Send(false, "\r\n", 1);
   }
 
 
@@ -478,7 +478,7 @@ namespace Orthanc
     // closed the connection. Such an error is ignored.
     try
     {
-      std::string header = "--" + multipartBoundary_ + "--\n";
+      std::string header = "--" + multipartBoundary_ + "--\r\n";
       stream_.Send(false, header.c_str(), header.size());
     }
     catch (OrthancException&)

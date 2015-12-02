@@ -47,6 +47,11 @@ namespace Orthanc
     bool HasReachedLimit(const DicomFindAnswers& answers,
                          ResourceType level) const;
 
+    bool FilterQueryTag(std::string& value /* can be modified */,
+                        ResourceType level,
+                        const DicomTag& tag,
+                        ModalityManufacturer manufacturer);
+
   public:
     OrthancFindRequestHandler(ServerContext& context) :
       context_(context), 
@@ -55,10 +60,11 @@ namespace Orthanc
     {
     }
 
-    virtual bool Handle(DicomFindAnswers& answers,
+    virtual void Handle(DicomFindAnswers& answers,
                         const DicomMap& input,
                         const std::string& remoteIp,
-                        const std::string& remoteAet);
+                        const std::string& remoteAet,
+                        const std::string& calledAet);
 
     unsigned int GetMaxResults() const
     {

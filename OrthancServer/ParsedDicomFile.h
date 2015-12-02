@@ -33,11 +33,13 @@
 #pragma once
 
 #include "../Core/DicomFormat/DicomInstanceHasher.h"
-#include "../Core/RestApi/RestApiOutput.h"
-#include "ServerEnumerations.h"
-#include "../Core/Images/ImageAccessor.h"
-#include "../Core/Images/ImageBuffer.h"
 #include "../Core/IDynamicObject.h"
+#include "../Core/RestApi/RestApiOutput.h"
+#include "IDicomImageDecoder.h"
+#include "ServerEnumerations.h"
+
+class DcmDataset;
+class DcmFileFormat;
 
 namespace Orthanc
 {
@@ -49,26 +51,32 @@ namespace Orthanc
 
     ParsedDicomFile(ParsedDicomFile& other);
 
-    void Setup(const char* content,
+    void Setup(const void* content,
                size_t size);
 
     void RemovePrivateTagsInternal(const std::set<DicomTag>* toKeep);
 
     void UpdateStorageUid(const DicomTag& tag,
                           const std::string& value,
-                          bool decodeBinaryTags);
+                          bool decodeDataUriScheme);
 
   public:
-    ParsedDicomFile();  // Create a minimal DICOM instance
+    ParsedDicomFile(bool createIdentifiers);  // Create a minimal DICOM instance
 
-    ParsedDicomFile(const char* content,
+    ParsedDicomFile(const DicomMap& map);
+
+    ParsedDicomFile(const void* content,
                     size_t size);
 
     ParsedDicomFile(const std::string& content);
 
+    ParsedDicomFile(DcmDataset& dicom);
+
+    ParsedDicomFile(DcmFileFormat& dicom);
+
     ~ParsedDicomFile();
 
-    void* GetDcmtkObject();
+    DcmFileFormat& GetDcmtkObject() const;
 
     ParsedDicomFile* Clone();
 
@@ -85,12 +93,12 @@ namespace Orthanc
 
     void Replace(const DicomTag& tag,
                  const Json::Value& value,  // Assumed to be encoded with UTF-8
-                 bool decodeBinaryTags,
+                 bool decodeDataUriScheme,
                  DicomReplaceMode mode = DicomReplaceMode_InsertIfAbsent);
 
     void Insert(const DicomTag& tag,
                 const Json::Value& value,   // Assumed to be encoded with UTF-8
-                bool decodeBinaryTags);
+                bool decodeDataUriScheme);
 
     void RemovePrivateTags()
     {
@@ -118,18 +126,20 @@ namespace Orthanc
     void EmbedImage(const std::string& mime,
                     const std::string& content);
 
-    void ExtractImage(ImageBuffer& result,
-                      unsigned int frame);
+    ImageAccessor* ExtractImage(IDicomImageDecoder& decoder,
+                                unsigned int frame);
 
-    void ExtractImage(ImageBuffer& result,
-                      unsigned int frame,
-                      ImageExtractionMode mode);
+    ImageAccessor* ExtractImage(IDicomImageDecoder& decoder,
+                                unsigned int frame,
+                                ImageExtractionMode mode);
 
     void ExtractPngImage(std::string& result,
+                         IDicomImageDecoder& decoder,
                          unsigned int frame,
                          ImageExtractionMode mode);
 
     void ExtractJpegImage(std::string& result,
+                          IDicomImageDecoder& decoder,
                           unsigned int frame,
                           ImageExtractionMode mode,
                           uint8_t quality);
@@ -143,6 +153,9 @@ namespace Orthanc
                 DicomToJsonFlags flags,
                 unsigned int maxStringLength);
 
+    void HeaderToJson(Json::Value& target, 
+                      DicomToJsonFormat format);
+
     bool HasTag(const DicomTag& tag) const;
 
     void EmbedPdf(const std::string& pdf);
@@ -150,6 +163,9 @@ namespace Orthanc
     bool ExtractPdf(std::string& pdf);
 
     void Convert(DicomMap& tags);
+
+    static ParsedDicomFile* CreateFromJson(const Json::Value& value,
+                                           DicomFromJsonFlags flags);
   };
 
 }

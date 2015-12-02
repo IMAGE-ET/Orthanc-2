@@ -32,51 +32,44 @@
 
 #pragma once
 
-#include <dcmtk/dcmdata/dcfilefo.h>
+#include <memory>
 
-#include "../../Core/Images/ImageBuffer.h"
+#include "../IDicomImageDecoder.h"
+
+class DcmDataset;
 
 namespace Orthanc
 {
-  class DicomImageDecoder
+  class DicomImageDecoder : public IDicomImageDecoder
   {
   private:
     class ImageSource;
 
-    static void DecodeUncompressedImageInternal(ImageBuffer& target,
-                                                DcmDataset& dataset,
-                                                unsigned int frame);
+    static ImageAccessor* DecodeUncompressedImageInternal(DcmDataset& dataset,
+                                                          unsigned int frame);
 
     static bool IsPsmctRle1(DcmDataset& dataset);
 
-    static void SetupImageBuffer(ImageBuffer& target,
-                                 DcmDataset& dataset);
+    static ImageAccessor* CreateImage(DcmDataset& dataset);
 
     static bool IsUncompressedImage(const DcmDataset& dataset);
 
-    static void DecodeUncompressedImage(ImageBuffer& target,
-                                        DcmDataset& dataset,
-                                        unsigned int frame);
+    static ImageAccessor* DecodeUncompressedImage(DcmDataset& dataset,
+                                                  unsigned int frame);
 
 #if ORTHANC_JPEG_LOSSLESS_ENABLED == 1
-    static void DecodeJpegLossless(ImageBuffer& target,
-                                   DcmDataset& dataset,
-                                   unsigned int frame);
+    static ImageAccessor* DecodeJpegLossless(DcmDataset& dataset,
+                                             unsigned int frame);
 #endif
 
   public:
-    static bool Decode(ImageBuffer& target,
-                       DcmDataset& dataset,
-                       unsigned int frame);
+    virtual ImageAccessor *Decode(ParsedDicomFile& dicom,
+                                  unsigned int frame);
 
-    static bool DecodeAndTruncate(ImageBuffer& target,
-                                  DcmDataset& dataset,
-                                  unsigned int frame,
-                                  PixelFormat format,
-                                  bool allowColorConversion);
+    static bool TruncateDecodedImage(std::auto_ptr<ImageAccessor>& image,
+                                     PixelFormat format,
+                                     bool allowColorConversion);
 
-    static bool DecodePreview(ImageBuffer& target,
-                              DcmDataset& dataset,
-                              unsigned int frame);
+    static bool PreviewDecodedImage(std::auto_ptr<ImageAccessor>& image);
   };
 }

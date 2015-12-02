@@ -37,6 +37,7 @@
 #include "../Core/DicomFormat/DicomMap.h"
 
 #include <dcmtk/dcmdata/dcdatset.h>
+#include <dcmtk/dcmdata/dcmetinf.h>
 #include <json/json.h>
 
 namespace Orthanc
@@ -60,8 +61,6 @@ namespace Orthanc
 
     static DicomTag GetTag(const DcmElement& element);
 
-    static bool IsPrivateTag(const DicomTag& tag);
-
     static bool IsUnknownTag(const DicomTag& tag);
 
     static DicomValue* ConvertLeafElement(DcmElement& element,
@@ -77,6 +76,12 @@ namespace Orthanc
 
     static void ToJson(Json::Value& target, 
                        DcmDataset& dataset,
+                       DicomToJsonFormat format,
+                       DicomToJsonFlags flags,
+                       unsigned int maxStringLength);
+
+    static void ToJson(Json::Value& target, 
+                       DcmMetaInfo& header,
                        DicomToJsonFormat format,
                        DicomToJsonFlags flags,
                        unsigned int maxStringLength);
@@ -125,12 +130,12 @@ namespace Orthanc
     static void FillElementWithString(DcmElement& element,
                                       const DicomTag& tag,
                                       const std::string& utf8alue,  // Encoded using UTF-8
-                                      bool interpretBinaryTags,
+                                      bool decodeDataUriScheme,
                                       Encoding dicomEncoding);
 
     static DcmElement* FromJson(const DicomTag& tag,
                                 const Json::Value& element,  // Encoding using UTF-8
-                                bool interpretBinaryTags,
+                                bool decodeDataUriScheme,
                                 Encoding dicomEncoding);
 
     static DcmEVR ParseValueRepresentation(const std::string& s);

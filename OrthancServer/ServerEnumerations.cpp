@@ -63,6 +63,7 @@ namespace Orthanc
     dictMetadataType_.Add(MetadataType_ModifiedFrom, "ModifiedFrom");
     dictMetadataType_.Add(MetadataType_AnonymizedFrom, "AnonymizedFrom");
     dictMetadataType_.Add(MetadataType_LastUpdate, "LastUpdate");
+    dictMetadataType_.Add(MetadataType_Instance_Origin, "Origin");
 
     dictContentType_.Add(FileContentType_Dicom, "dicom");
     dictContentType_.Add(FileContentType_DicomAsJson, "dicom-as-json");
@@ -336,6 +337,15 @@ namespace Orthanc
       case ModalityManufacturer_SyngoVia:
         return "SyngoVia";
       
+      case ModalityManufacturer_AgfaImpax:
+        return "AgfaImpax";
+      
+      case ModalityManufacturer_EFilm2:
+        return "EFilm2";
+      
+      case ModalityManufacturer_Vitrea:
+        return "Vitrea";
+      
       default:
         throw OrthancException(ErrorCode_ParameterOutOfRange);
     }
@@ -398,6 +408,18 @@ namespace Orthanc
     else if (manufacturer == "SyngoVia")
     {
       return ModalityManufacturer_SyngoVia;
+    }
+    else if (manufacturer == "AgfaImpax")
+    {
+      return ModalityManufacturer_AgfaImpax;
+    }
+    else if (manufacturer == "Vitrea")
+    {
+      return ModalityManufacturer_Vitrea;
+    }
+    else if (manufacturer == "EFilm2")
+    {
+      return ModalityManufacturer_EFilm2;
     }
     else
     {

@@ -39,6 +39,7 @@
 #include "../FromDcmtkBridge.h"
 #include "../ServerContext.h"
 #include "../SliceOrdering.h"
+#include "../Internals/DicomImageDecoder.h"
 
 
 namespace Orthanc
@@ -265,6 +266,7 @@ namespace Orthanc
     class ImageToEncode
     {
     private:
+      IDicomImageDecoder& decoder_;
       std::string         format_;
       std::string         encoded_;
       ParsedDicomFile&    dicom_;
@@ -272,9 +274,11 @@ namespace Orthanc
       ImageExtractionMode mode_;
 
     public:
-      ImageToEncode(ParsedDicomFile& dicom,
+      ImageToEncode(IDicomImageDecoder& decoder,
+                    ParsedDicomFile& dicom,
                     unsigned int frame,
                     ImageExtractionMode mode) : 
+        decoder_(decoder),
         dicom_(dicom),
         frame_(frame),
         mode_(mode)
@@ -310,6 +314,11 @@ namespace Orthanc
       {
         output.AnswerBuffer(encoded_, format_);
       }
+
+      IDicomImageDecoder& GetDecoder() const
+      {
+        return decoder_;
+      }
     };
 
     class EncodePng : public HttpContentNegociation::IHandler
@@ -327,7 +336,8 @@ namespace Orthanc
       {
         assert(type == "image");
         assert(subtype == "png");
-        image_.GetDicom().ExtractPngImage(image_.GetTarget(), image_.GetFrame(), image_.GetMode());
+        image_.GetDicom().ExtractPngImage(image_.GetTarget(), image_.GetDecoder(), 
+                                          image_.GetFrame(), image_.GetMode());
         image_.SetFormat("image/png");
       }
     };
@@ -349,7 +359,7 @@ namespace Orthanc
         try
         {
           quality_ = boost::lexical_cast<unsigned int>(v);
-          ok = (quality_ >= 0 && quality_ <= 100);
+          ok = (quality_ >= 1 && quality_ <= 100);
         }
         catch (boost::bad_lexical_cast&)
         {
@@ -367,7 +377,8 @@ namespace Orthanc
       {
         assert(type == "image");
         assert(subtype == "jpeg");
-        image_.GetDicom().ExtractJpegImage(image_.GetTarget(), image_.GetFrame(), image_.GetMode(), quality_);
+        image_.GetDicom().ExtractJpegImage(image_.GetTarget(), image_.GetDecoder(), 
+                                           image_.GetFrame(), image_.GetMode(), quality_);
         image_.SetFormat("image/jpeg");
       }
     };
@@ -399,7 +410,13 @@ namespace Orthanc
 
     try
     {
-      ImageToEncode image(dicom, frame, mode);
+#if ORTHANC_PLUGINS_ENABLED == 1
+      IDicomImageDecoder& decoder = context.GetPlugins();
+#else
+      DicomImageDecoder decoder;  // This is Orthanc's built-in decoder
+#endif
+
+      ImageToEncode image(decoder, dicom, frame, mode);
 
       HttpContentNegociation negociation;
       EncodePng png(image);          negociation.Register("image/png", png);
@@ -451,14 +468,17 @@ namespace Orthanc
     std::string dicomContent;
     context.ReadFile(dicomContent, publicId, FileContentType_Dicom);
 
-    ParsedDicomFile dicom(dicomContent);
-    ImageBuffer buffer;
-    dicom.ExtractImage(buffer, frame);
+#if ORTHANC_PLUGINS_ENABLED == 1
+    IDicomImageDecoder& decoder = context.GetPlugins();
+#else
+    DicomImageDecoder decoder;  // This is Orthanc's built-in decoder
+#endif
 
-    ImageAccessor accessor(buffer.GetConstAccessor());
+    ParsedDicomFile dicom(dicomContent);
+    std::auto_ptr<ImageAccessor> decoded(dicom.ExtractImage(decoder, frame));
 
     std::string result;
-    accessor.ToMatlabString(result);
+    decoded->ToMatlabString(result);
 
     call.GetOutput().AnswerBuffer(result, "text/plain");
   }
@@ -1077,11 +1097,13 @@ namespace Orthanc
       size_t limit = 0;
       if (request.isMember("Limit"))
       {
-        limit = request["CaseSensitive"].asInt();
-        if (limit < 0)
+        int tmp = request["CaseSensitive"].asInt();
+        if (tmp < 0)
         {
           throw OrthancException(ErrorCode_ParameterOutOfRange);
         }
+
+        limit = static_cast<size_t>(tmp);
       }
 
       std::string level = request["Level"].asString();
@@ -1255,6 +1277,34 @@ namespace Orthanc
   }
 
 
+  static void GetInstanceHeader(RestApiGetCall& call)
+  {
+    ServerContext& context = OrthancRestApi::GetContext(call);
+
+    std::string publicId = call.GetUriComponent("id", "");
+    bool simplify = call.HasArgument("simplify");
+
+    std::string dicomContent;
+    context.ReadFile(dicomContent, publicId, FileContentType_Dicom);
+
+    ParsedDicomFile dicom(dicomContent);
+
+    Json::Value header;
+    dicom.HeaderToJson(header, DicomToJsonFormat_Full);
+
+    if (simplify)
+    {
+      Json::Value simplified;
+      Toolbox::SimplifyTags(simplified, header);
+      call.GetOutput().AnswerJson(simplified);
+    }
+    else
+    {
+      call.GetOutput().AnswerJson(header);
+    }
+  }
+
+
   void OrthancRestApi::RegisterResources()
   {
     Register("/instances", ListResources<ResourceType_Instance>);
@@ -1303,6 +1353,7 @@ namespace Orthanc
     Register("/instances/{id}/image-uint16", GetImage<ImageExtractionMode_UInt16>);
     Register("/instances/{id}/image-int16", GetImage<ImageExtractionMode_Int16>);
     Register("/instances/{id}/matlab", GetMatlabImage);
+    Register("/instances/{id}/header", GetInstanceHeader);
 
     Register("/patients/{id}/protected", IsProtectedPatient);
     Register("/patients/{id}/protected", SetPatientProtection);

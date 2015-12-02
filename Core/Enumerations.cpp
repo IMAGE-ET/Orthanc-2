@@ -325,6 +325,9 @@ namespace Orthanc
       case ErrorCode_CannotOrderSlices:
         return "Unable to order the slices of the series";
 
+      case ErrorCode_NoWorklistHandler:
+        return "No request handler factory for DICOM C-Find Modality SCP";
+
       default:
         if (error >= ErrorCode_START_PLUGINS)
         {
@@ -678,8 +681,8 @@ namespace Orthanc
       case RequestOrigin_DicomProtocol:
         return "DicomProtocol";
 
-      case RequestOrigin_Http:
-        return "Http";
+      case RequestOrigin_RestApi:
+        return "RestApi";
 
       case RequestOrigin_Plugins:
         return "Plugins";

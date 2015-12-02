@@ -66,6 +66,11 @@ namespace Orthanc
       return element_;
     }
 
+    bool IsPrivate() const
+    {
+      return group_ % 2 == 1;
+    }
+
     const char* GetMainTagsName() const;
 
     bool operator< (const DicomTag& other) const;
@@ -152,4 +157,16 @@ namespace Orthanc
   static const DicomTag DICOM_TAG_SERIES_TIME(0x0008, 0x0031);
   static const DicomTag DICOM_TAG_STUDY_DATE(0x0008, 0x0020);
   static const DicomTag DICOM_TAG_STUDY_TIME(0x0008, 0x0030);
+
+  // Various tags
+  static const DicomTag DICOM_TAG_SERIES_TYPE(0x0054, 0x1000);
+  static const DicomTag DICOM_TAG_REQUESTED_PROCEDURE_DESCRIPTION(0x0032, 0x1060);
+  static const DicomTag DICOM_TAG_INSTITUTION_NAME(0x0008, 0x0080);
+  static const DicomTag DICOM_TAG_REQUESTING_PHYSICIAN(0x0032, 0x1032);
+  static const DicomTag DICOM_TAG_REFERRING_PHYSICIAN_NAME(0x0008, 0x0090);
+  static const DicomTag DICOM_TAG_OPERATOR_NAME(0x0008, 0x1070);
+  static const DicomTag DICOM_TAG_PERFORMED_PROCEDURE_STEP_DESCRIPTION(0x0040, 0x0254);
+  static const DicomTag DICOM_TAG_IMAGE_COMMENTS(0x0020, 0x4000);
+  static const DicomTag DICOM_TAG_ACQUISITION_DEVICE_PROCESSING_DESCRIPTION(0x0018, 0x1400);
+  static const DicomTag DICOM_TAG_CONTRAST_BOLUS_AGENT(0x0018, 0x0010);
 }
