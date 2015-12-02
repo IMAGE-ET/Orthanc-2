@@ -1,9 +1,9 @@
 if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
   SET(DCMTK_VERSION_NUMBER 361)
   SET(DCMTK_PACKAGE_VERSION "3.6.1")
-  SET(DCMTK_SOURCES_DIR ${CMAKE_BINARY_DIR}/dcmtk-3.6.1_20150629)
-  SET(DCMTK_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/dcmtk-3.6.1_20150629.tar.gz")
-  SET(DCMTK_MD5 "2faf73786fc638ae05fef0103cce0eea")
+  SET(DCMTK_SOURCES_DIR ${CMAKE_BINARY_DIR}/dcmtk-3.6.1_20150924)
+  SET(DCMTK_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/dcmtk-3.6.1_20150924.tar.gz")
+  SET(DCMTK_MD5 "0d60ea9e1c886124fe45122855cecd30")
 
   if (IS_DIRECTORY "${DCMTK_SOURCES_DIR}")
     set(FirstRun OFF)
@@ -123,7 +123,7 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
   list(REMOVE_ITEM DCMTK_SOURCES 
     ${DCMTK_SOURCES_DIR}/dcmdata/libsrc/mkdictbi.cc
     ${DCMTK_SOURCES_DIR}/dcmdata/libsrc/mkdeftag.cc
-    ${DCMTK_SOURCES_DIR}/dcmdata/libsrc/dcdictbi.cc
+    #${DCMTK_SOURCES_DIR}/dcmdata/libsrc/dcdictbi.cc
     )
 
   #set_source_files_properties(${DCMTK_SOURCES}

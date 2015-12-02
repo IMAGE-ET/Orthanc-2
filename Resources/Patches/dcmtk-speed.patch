@@ -1,6 +1,6 @@
-diff -r -u dcmtk-3.6.1_20150629.orig/dcmnet/libsrc/dul.cc dcmtk-3.6.1_20150629/dcmnet/libsrc/dul.cc
---- dcmtk-3.6.1_20150629.orig/dcmnet/libsrc/dul.cc	2015-06-29 10:56:45.000000000 +0200
-+++ dcmtk-3.6.1_20150629/dcmnet/libsrc/dul.cc	2015-09-23 10:18:58.796546032 +0200
+diff -Naur dcmtk-3.6.1_20150924.orig/dcmnet/libsrc/dul.cc dcmtk-3.6.1_20150924/dcmnet/libsrc/dul.cc
+--- dcmtk-3.6.1_20150924.orig/dcmnet/libsrc/dul.cc	2015-12-02 09:56:30.845194735 +0100
++++ dcmtk-3.6.1_20150924/dcmnet/libsrc/dul.cc	2015-12-02 09:56:49.925194253 +0100
 @@ -1833,7 +1833,7 @@
          return makeDcmnetCondition(DULC_TCPINITERROR, OF_error, msg.c_str());
      }
@@ -10,10 +10,9 @@ diff -r -u dcmtk-3.6.1_20150629.orig/dcmnet/libsrc/dul.cc dcmtk-3.6.1_20150629/d
  
  #ifndef DONT_DISABLE_NAGLE_ALGORITHM
      /*
-Only in dcmtk-3.6.1_20150629/dcmnet/libsrc: dul.cc~
-diff -r -u dcmtk-3.6.1_20150629.orig/dcmnet/libsrc/dulfsm.cc dcmtk-3.6.1_20150629/dcmnet/libsrc/dulfsm.cc
---- dcmtk-3.6.1_20150629.orig/dcmnet/libsrc/dulfsm.cc	2015-06-29 10:56:45.000000000 +0200
-+++ dcmtk-3.6.1_20150629/dcmnet/libsrc/dulfsm.cc	2015-09-23 10:19:10.088545747 +0200
+diff -Naur dcmtk-3.6.1_20150924.orig/dcmnet/libsrc/dulfsm.cc dcmtk-3.6.1_20150924/dcmnet/libsrc/dulfsm.cc
+--- dcmtk-3.6.1_20150924.orig/dcmnet/libsrc/dulfsm.cc	2015-12-02 09:56:30.845194735 +0100
++++ dcmtk-3.6.1_20150924/dcmnet/libsrc/dulfsm.cc	2015-12-02 09:57:03.709193904 +0100
 @@ -2421,7 +2421,7 @@
            return makeDcmnetCondition(DULC_TCPINITERROR, OF_error, msg.c_str());
          }
@@ -23,4 +22,3 @@ diff -r -u dcmtk-3.6.1_20150629.orig/dcmnet/libsrc/dulfsm.cc dcmtk-3.6.1_2015062
  
  #ifndef DONT_DISABLE_NAGLE_ALGORITHM
          /*
-Only in dcmtk-3.6.1_20150629/dcmnet/libsrc: dulfsm.cc~
