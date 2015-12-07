@@ -1,15 +1,24 @@
 if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
-  SET(DCMTK_VERSION_NUMBER 360)
-  SET(DCMTK_PACKAGE_VERSION "3.6.0")
-  SET(DCMTK_SOURCES_DIR ${CMAKE_BINARY_DIR}/dcmtk-3.6.0)
-  SET(DCMTK_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/dcmtk-3.6.0.zip")
-  SET(DCMTK_MD5 "219ad631b82031806147e4abbfba4fa4")
+  SET(DCMTK_VERSION_NUMBER 361)
+  SET(DCMTK_PACKAGE_VERSION "3.6.1")
+  SET(DCMTK_SOURCES_DIR ${CMAKE_BINARY_DIR}/dcmtk-3.6.1_20150924)
+  SET(DCMTK_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/dcmtk-3.6.1_20150924.tar.gz")
+  SET(DCMTK_MD5 "0d60ea9e1c886124fe45122855cecd30")
 
   if (IS_DIRECTORY "${DCMTK_SOURCES_DIR}")
     set(FirstRun OFF)
   else()
     set(FirstRun ON)
   endif()
+
+  # Definitions for DCMTK 3.6.1
+  macro(DCMTK_UNSET)
+  endmacro()
+
+  set(DCMTK_CMAKE_INCLUDE ${DCMTK_SOURCES_DIR}/)
+  add_definitions(-DDCMTK_INSIDE_LOG4CPLUS=1)
+  # End
+
 
   DownloadPackage(${DCMTK_MD5} ${DCMTK_URL} "${DCMTK_SOURCES_DIR}")
 
@@ -39,6 +48,18 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
   CONFIGURE_FILE(
     ${DCMTK_SOURCES_DIR}/CMake/osconfig.h.in
     ${DCMTK_SOURCES_DIR}/config/include/dcmtk/config/osconfig.h)
+
+
+  execute_process(
+    COMMAND ${PATCH_EXECUTABLE} -p0 -N -i ${ORTHANC_ROOT}/Resources/Patches/dcmtk-speed.patch
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    RESULT_VARIABLE Failure
+    )
+
+  if (Failure AND FirstRun)
+    message(FATAL_ERROR "Error while patching a file")
+  endif()
+
 
   AUX_SOURCE_DIRECTORY(${DCMTK_SOURCES_DIR}/dcmnet/libsrc DCMTK_SOURCES)
   AUX_SOURCE_DIRECTORY(${DCMTK_SOURCES_DIR}/dcmdata/libsrc DCMTK_SOURCES)
@@ -87,55 +108,22 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_DCMTK)
       ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
       ${CMAKE_SYSTEM_NAME} STREQUAL "kFreeBSD")
     list(REMOVE_ITEM DCMTK_SOURCES 
+      ${DCMTK_SOURCES_DIR}/oflog/libsrc/clfsap.cc
       ${DCMTK_SOURCES_DIR}/oflog/libsrc/windebap.cc
       ${DCMTK_SOURCES_DIR}/oflog/libsrc/winsock.cc
       )
     
-    execute_process(
-      COMMAND ${PATCH_EXECUTABLE} -p0 -N -i ${ORTHANC_ROOT}/Resources/Patches/dcmtk-linux-speed.patch
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      RESULT_VARIABLE Failure
-      )
-
-    if (Failure AND FirstRun)
-      message(FATAL_ERROR "Error while patching a file")
-    endif()
-
   elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     list(REMOVE_ITEM DCMTK_SOURCES 
+      ${DCMTK_SOURCES_DIR}/oflog/libsrc/clfsap.cc
       ${DCMTK_SOURCES_DIR}/oflog/libsrc/unixsock.cc
       )
-
-    if (CMAKE_COMPILER_IS_GNUCXX)
-      # This is a patch for MinGW64
-      execute_process(
-        COMMAND ${PATCH_EXECUTABLE} -p0 -N -i ${ORTHANC_ROOT}/Resources/Patches/dcmtk-mingw64.patch
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        RESULT_VARIABLE Failure
-        )
-
-      if (Failure AND FirstRun)
-        message(FATAL_ERROR "Error while patching a file")
-      endif()
-    endif()
-
-    # This patch improves speed, even for Windows
-    execute_process(
-      COMMAND ${PATCH_EXECUTABLE} -p0 -N 
-      INPUT_FILE ${ORTHANC_ROOT}/Resources/Patches/dcmtk-linux-speed.patch
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      RESULT_VARIABLE Failure
-      )
-
-    if (Failure AND FirstRun)
-      message(FATAL_ERROR "Error while patching a file")
-    endif()
   endif()
 
   list(REMOVE_ITEM DCMTK_SOURCES 
     ${DCMTK_SOURCES_DIR}/dcmdata/libsrc/mkdictbi.cc
     ${DCMTK_SOURCES_DIR}/dcmdata/libsrc/mkdeftag.cc
-    ${DCMTK_SOURCES_DIR}/dcmdata/libsrc/dcdictbi.cc
+    #${DCMTK_SOURCES_DIR}/dcmdata/libsrc/dcdictbi.cc
     )
 
   #set_source_files_properties(${DCMTK_SOURCES}
