@@ -1,0 +1,488 @@
+/**
+ * Orthanc - A Lightweight, RESTful DICOM Store
+ * Copyright (C) 2012-2015 Sebastien Jodogne, Medical Physics
+ * Department, University Hospital of Liege, Belgium
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * In addition, as a special exception, the copyright holders of this
+ * program give permission to link the code of its release with the
+ * OpenSSL project's "OpenSSL" library (or with modified versions of it
+ * that use the same license as the "OpenSSL" library), and distribute
+ * the linked executables. You must obey the GNU General Public License
+ * in all respects for all of the code used other than "OpenSSL". If you
+ * modify file(s) with this exception, you may extend this exception to
+ * your version of the file(s), but you are not obligated to do so. If
+ * you do not wish to do so, delete this exception statement from your
+ * version. If you delete this exception statement from all source files
+ * in the program, then also delete it here.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ **/
+
+
+#include "../../OrthancServer/PrecompiledHeadersServer.h"
+#include "PluginsEnumerations.h"
+
+#if ORTHANC_PLUGINS_ENABLED != 1
+#error The plugin support is disabled
+#endif
+
+
+#include "../../Core/OrthancException.h"
+
+namespace Orthanc
+{
+  namespace Plugins
+  {
+    OrthancPluginResourceType Convert(ResourceType type)
+    {
+      switch (type)
+      {
+        case ResourceType_Patient:
+          return OrthancPluginResourceType_Patient;
+
+        case ResourceType_Study:
+          return OrthancPluginResourceType_Study;
+
+        case ResourceType_Series:
+          return OrthancPluginResourceType_Series;
+
+        case ResourceType_Instance:
+          return OrthancPluginResourceType_Instance;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    ResourceType Convert(OrthancPluginResourceType type)
+    {
+      switch (type)
+      {
+        case OrthancPluginResourceType_Patient:
+          return ResourceType_Patient;
+
+        case OrthancPluginResourceType_Study:
+          return ResourceType_Study;
+
+        case OrthancPluginResourceType_Series:
+          return ResourceType_Series;
+
+        case OrthancPluginResourceType_Instance:
+          return ResourceType_Instance;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    OrthancPluginChangeType Convert(ChangeType type)
+    {
+      switch (type)
+      {
+        case ChangeType_CompletedSeries:
+          return OrthancPluginChangeType_CompletedSeries;
+
+        case ChangeType_Deleted:
+          return OrthancPluginChangeType_Deleted;
+
+        case ChangeType_NewChildInstance:
+          return OrthancPluginChangeType_NewChildInstance;
+
+        case ChangeType_NewInstance:
+          return OrthancPluginChangeType_NewInstance;
+
+        case ChangeType_NewPatient:
+          return OrthancPluginChangeType_NewPatient;
+
+        case ChangeType_NewSeries:
+          return OrthancPluginChangeType_NewSeries;
+
+        case ChangeType_NewStudy:
+          return OrthancPluginChangeType_NewStudy;
+
+        case ChangeType_StablePatient:
+          return OrthancPluginChangeType_StablePatient;
+
+        case ChangeType_StableSeries:
+          return OrthancPluginChangeType_StableSeries;
+
+        case ChangeType_StableStudy:
+          return OrthancPluginChangeType_StableStudy;
+
+        case ChangeType_UpdatedAttachment:
+          return OrthancPluginChangeType_UpdatedAttachment;
+
+        case ChangeType_UpdatedMetadata:
+          return OrthancPluginChangeType_UpdatedMetadata;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    OrthancPluginPixelFormat Convert(PixelFormat format)
+    {
+      switch (format)
+      {
+        case PixelFormat_Grayscale16:
+          return OrthancPluginPixelFormat_Grayscale16;
+
+        case PixelFormat_Grayscale8:
+          return OrthancPluginPixelFormat_Grayscale8;
+
+        case PixelFormat_RGB24:
+          return OrthancPluginPixelFormat_RGB24;
+
+        case PixelFormat_RGBA32:
+          return OrthancPluginPixelFormat_RGBA32;
+
+        case PixelFormat_SignedGrayscale16:
+          return OrthancPluginPixelFormat_SignedGrayscale16;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    PixelFormat Convert(OrthancPluginPixelFormat format)
+    {
+      switch (format)
+      {
+        case OrthancPluginPixelFormat_Grayscale16:
+          return PixelFormat_Grayscale16;
+
+        case OrthancPluginPixelFormat_Grayscale8:
+          return PixelFormat_Grayscale8;
+
+        case OrthancPluginPixelFormat_RGB24:
+          return PixelFormat_RGB24;
+
+        case OrthancPluginPixelFormat_RGBA32:
+          return PixelFormat_RGBA32;
+
+        case OrthancPluginPixelFormat_SignedGrayscale16:
+          return PixelFormat_SignedGrayscale16;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    OrthancPluginContentType Convert(FileContentType type)
+    {
+      switch (type)
+      {
+        case FileContentType_Dicom:
+          return OrthancPluginContentType_Dicom;
+
+        case FileContentType_DicomAsJson:
+          return OrthancPluginContentType_DicomAsJson;
+
+        default:
+          return OrthancPluginContentType_Unknown;
+      }
+    }
+
+
+    FileContentType Convert(OrthancPluginContentType type)
+    {
+      switch (type)
+      {
+        case OrthancPluginContentType_Dicom:
+          return FileContentType_Dicom;
+
+        case OrthancPluginContentType_DicomAsJson:
+          return FileContentType_DicomAsJson;
+
+        default:
+          return FileContentType_Unknown;
+      }
+    }
+
+
+    DicomToJsonFormat Convert(OrthancPluginDicomToJsonFormat format)
+    {
+      switch (format)
+      {
+        case OrthancPluginDicomToJsonFormat_Full:
+          return DicomToJsonFormat_Full;
+
+        case OrthancPluginDicomToJsonFormat_Short:
+          return DicomToJsonFormat_Short;
+
+        case OrthancPluginDicomToJsonFormat_Human:
+          return DicomToJsonFormat_Human;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    OrthancPluginIdentifierConstraint Convert(IdentifierConstraintType constraint)
+    {
+      switch (constraint)
+      {
+        case IdentifierConstraintType_Equal:
+          return OrthancPluginIdentifierConstraint_Equal;
+
+        case IdentifierConstraintType_GreaterOrEqual:
+          return OrthancPluginIdentifierConstraint_GreaterOrEqual;
+
+        case IdentifierConstraintType_SmallerOrEqual:
+          return OrthancPluginIdentifierConstraint_SmallerOrEqual;
+
+        case IdentifierConstraintType_Wildcard:
+          return OrthancPluginIdentifierConstraint_Wildcard;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    IdentifierConstraintType Convert(OrthancPluginIdentifierConstraint constraint)
+    {
+      switch (constraint)
+      {
+        case OrthancPluginIdentifierConstraint_Equal:
+          return IdentifierConstraintType_Equal;
+
+        case OrthancPluginIdentifierConstraint_GreaterOrEqual:
+          return IdentifierConstraintType_GreaterOrEqual;
+
+        case OrthancPluginIdentifierConstraint_SmallerOrEqual:
+          return IdentifierConstraintType_SmallerOrEqual;
+
+        case OrthancPluginIdentifierConstraint_Wildcard:
+          return IdentifierConstraintType_Wildcard;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    OrthancPluginInstanceOrigin Convert(RequestOrigin origin)
+    {
+      switch (origin)
+      {
+        case RequestOrigin_DicomProtocol:
+          return OrthancPluginInstanceOrigin_DicomProtocol;
+
+        case RequestOrigin_RestApi:
+          return OrthancPluginInstanceOrigin_RestApi;
+
+        case RequestOrigin_Lua:
+          return OrthancPluginInstanceOrigin_Lua;
+
+        case RequestOrigin_Plugins:
+          return OrthancPluginInstanceOrigin_Plugin;
+
+        case RequestOrigin_Unknown:
+          return OrthancPluginInstanceOrigin_Unknown;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+#if !defined(ORTHANC_ENABLE_DCMTK) || ORTHANC_ENABLE_DCMTK != 0
+    DcmEVR Convert(OrthancPluginValueRepresentation vr)
+    {
+      switch (vr)
+      {
+        case OrthancPluginValueRepresentation_AE:
+          return EVR_AE;
+
+        case OrthancPluginValueRepresentation_AS:
+          return EVR_AS;
+
+        case OrthancPluginValueRepresentation_AT:
+          return EVR_AT;
+
+        case OrthancPluginValueRepresentation_CS:
+          return EVR_CS;
+
+        case OrthancPluginValueRepresentation_DA:
+          return EVR_DA;
+
+        case OrthancPluginValueRepresentation_DS:
+          return EVR_DS;
+
+        case OrthancPluginValueRepresentation_DT:
+          return EVR_DT;
+
+        case OrthancPluginValueRepresentation_FD:
+          return EVR_FD;
+
+        case OrthancPluginValueRepresentation_FL:
+          return EVR_FL;
+
+        case OrthancPluginValueRepresentation_IS:
+          return EVR_IS;
+
+        case OrthancPluginValueRepresentation_LO:
+          return EVR_LO;
+
+        case OrthancPluginValueRepresentation_LT:
+          return EVR_LT;
+
+        case OrthancPluginValueRepresentation_OB:
+          return EVR_OB;
+
+        case OrthancPluginValueRepresentation_OF:
+          return EVR_OF;
+
+        case OrthancPluginValueRepresentation_OW:
+          return EVR_OW;
+
+        case OrthancPluginValueRepresentation_PN:
+          return EVR_PN;
+
+        case OrthancPluginValueRepresentation_SH:
+          return EVR_SH;
+
+        case OrthancPluginValueRepresentation_SL:
+          return EVR_SL;
+
+        case OrthancPluginValueRepresentation_SQ:
+          return EVR_SQ;
+
+        case OrthancPluginValueRepresentation_SS:
+          return EVR_SS;
+
+        case OrthancPluginValueRepresentation_ST:
+          return EVR_ST;
+
+        case OrthancPluginValueRepresentation_TM:
+          return EVR_TM;
+
+        case OrthancPluginValueRepresentation_UI:
+          return EVR_UI;
+
+        case OrthancPluginValueRepresentation_UL:
+          return EVR_UL;
+
+        case OrthancPluginValueRepresentation_UN:
+          return EVR_UN;
+
+        case OrthancPluginValueRepresentation_US:
+          return EVR_US;
+
+        case OrthancPluginValueRepresentation_UT:
+          return EVR_UT;
+
+        default:
+          throw OrthancException(ErrorCode_ParameterOutOfRange);
+      }
+    }
+
+
+    OrthancPluginValueRepresentation Convert(DcmEVR vr)
+    {
+      switch (vr)
+      {
+        case EVR_AE:
+          return OrthancPluginValueRepresentation_AE;
+
+        case EVR_AS:
+          return OrthancPluginValueRepresentation_AS;
+
+        case EVR_AT:
+          return OrthancPluginValueRepresentation_AT;
+
+        case EVR_CS:
+          return OrthancPluginValueRepresentation_CS;
+
+        case EVR_DA:
+          return OrthancPluginValueRepresentation_DA;
+
+        case EVR_DS:
+          return OrthancPluginValueRepresentation_DS;
+
+        case EVR_DT:
+          return OrthancPluginValueRepresentation_DT;
+
+        case EVR_FD:
+          return OrthancPluginValueRepresentation_FD;
+
+        case EVR_FL:
+          return OrthancPluginValueRepresentation_FL;
+
+        case EVR_IS:
+          return OrthancPluginValueRepresentation_IS;
+
+        case EVR_LO:
+          return OrthancPluginValueRepresentation_LO;
+
+        case EVR_LT:
+          return OrthancPluginValueRepresentation_LT;
+
+        case EVR_OB:
+          return OrthancPluginValueRepresentation_OB;
+
+        case EVR_OF:
+          return OrthancPluginValueRepresentation_OF;
+
+        case EVR_OW:
+          return OrthancPluginValueRepresentation_OW;
+
+        case EVR_PN:
+          return OrthancPluginValueRepresentation_PN;
+
+        case EVR_SH:
+          return OrthancPluginValueRepresentation_SH;
+
+        case EVR_SL:
+          return OrthancPluginValueRepresentation_SL;
+
+        case EVR_SQ:
+          return OrthancPluginValueRepresentation_SQ;
+
+        case EVR_SS:
+          return OrthancPluginValueRepresentation_SS;
+
+        case EVR_ST:
+          return OrthancPluginValueRepresentation_ST;
+
+        case EVR_TM:
+          return OrthancPluginValueRepresentation_TM;
+
+        case EVR_UI:
+          return OrthancPluginValueRepresentation_UI;
+
+        case EVR_UL:
+          return OrthancPluginValueRepresentation_UL;
+
+        case EVR_US:
+          return OrthancPluginValueRepresentation_US;
+
+        case EVR_UT:
+          return OrthancPluginValueRepresentation_UT;
+
+        case EVR_UN:
+        default:
+          return OrthancPluginValueRepresentation_UN;  // Unknown
+      }
+    }
+#endif
+  }
+}
